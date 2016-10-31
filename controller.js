@@ -12,12 +12,12 @@ class Controller extends EventEmitter {
     super();
     const {
       parallel,
-      limitges
+      limit
     } = param;
     this.open = 0;
     this.running = 0;
 
-    this.limitges = limitges || 999999999;
+    this.limit = limit || 999999999;
 
     this.parallel = parallel || 20;
     this.collector = [];
@@ -33,7 +33,7 @@ class Controller extends EventEmitter {
       .then((res) => this.emit("arbeiten", null, res,zwischen))
       .catch((err) => this.emit("arbeiten", err));
 
-      if ( ++this.running >=  this.limitges ){
+      if ( ++this.running >=  this.limit ){
         return;
       }
   }
@@ -111,6 +111,8 @@ class Controller extends EventEmitter {
 
   statistik() {
     return {
+      limit: this.limit,
+      parallel: this.parallel,
       offen: this.running-this.collector.length,
       openrun: this.open,
       gesamt: this.collector.length,

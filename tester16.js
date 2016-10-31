@@ -9,12 +9,6 @@ const debug = require("debug")("test14");
 const moment = require("moment");
 
 const pool = new Pool({
-  /*
-  user: "postgres",
-  password: "postgres",
-  host: "localhost",
-  database: "postgres",
-  */
   max: 30, //set pool max size to 20
   min: 10, //set min pool size to 4
   idleTimeoutMillis: 10000 //close idle clie
@@ -22,7 +16,7 @@ const pool = new Pool({
 
 const controller =require("./controller.js")({
   parallel: 30,
-  limitges: 3000
+  limit: 3000
 });
 
 
@@ -113,12 +107,9 @@ pool.on("error", (error, client) => {
 
 function *starter(res,  dann=moment.now("X")) {
 
-
   for (let i = 0; i < 3; i++) {
-
       yield *controller.warten(dann + i * 200000);
       yield *controller.startarr(res,la);
-
   }
 
 }
