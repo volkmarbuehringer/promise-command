@@ -43,6 +43,9 @@ The controller only terminates when every executed function call is finished. Th
 ### end condition
 If the generator stops generation of promises the controller waits until all running promises are finished and the terminates with success error depending on the number of errors. If there are too many errors or the limit of executions in the configuration is reached the controller terminates independently from the generator.
 
+### test-function
+the controller contains a simple test-function which can be used for tests together with the user-supplied generator function.
+
 ### limitations
 
 the generation of promises can be endless or limited to a finite number. Every promise must terminate otherwise the controller can never end and the program must be terminated with process.exit.
