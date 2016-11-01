@@ -6,44 +6,54 @@ const moment = require("moment");
 const EventEmitter = require("events");
 
 
-
 class Controller extends EventEmitter {
   constructor(param) {
     super();
     const {
       parallel,
-      limit
+      limit,
+      errorlimit
     } = param;
-    this.open = 0;
+    this.sleeper=0;
+    this.open = new Map();
     this.running = 0;
-
     this.limit = limit || 999999999;
-
     this.parallel = parallel || 20;
     this.collector = [];
     this.errcollector = [];
-
+    this.errorlimit = errorlimit||1;
   }
 
-*startarr( webber,fun){
-  this.sleepval=null;
-  for ( const c of  webber) {
-    const zwischen = this.running;
-    yield fun(c)
-      .then((res) => this.emit("arbeiten", null, res,zwischen))
-      .catch((err) => this.emit("arbeiten", err));
+startOne( fun,c ){
+    const temp = this.running++;
 
-      if ( ++this.running >=  this.limit ){
-        return;
-      }
-  }
+    if (temp >=  this.limit ){
+      throw "End";
+    }
+
+  this.open.set(temp,c); //store running object
+  return fun(c)
+    .then((res) => this.emit("arbeiten", null, res,temp))
+    .catch((err) => this.emit("arbeiten", err));
+
 
 }
 
-*warten(starttim){
+*startAll( webber,fun){
+  this.sleepval=null;
+  for ( const c of  webber) {
+    yield this.startOne(fun,c);
+
+    }
+  }
+
+
+
+*waiter(starttim){
   const timeouter = (p) => new Promise((resolve) => setTimeout(resolve, p));
 
-  while ((this.sleepval = (starttim - moment.now("X"))) > 0) {
+  if ((this.sleepval = (starttim - moment.now("X"))) > 0) {
+    this.sleeper++;
     yield timeouter(this.sleepval)
       .then(() => this.emit("arbeiten"));
   }
@@ -53,7 +63,7 @@ class Controller extends EventEmitter {
 
   runner(startgen) {
 
-    const waiter = () => new Promise((resolve, reject) => this.once("arbeiten", (err, result,pos) =>err ? reject(err)
+    const waiter = () => new Promise((resolve, reject) => this.once("arbeiten", (err, result,pos) =>err ? reject({err,pos})
     : resolve({result, pos  })))
     .then((obj) => {
 
@@ -64,33 +74,36 @@ class Controller extends EventEmitter {
           throw new Error("internal err");
         }
         this.collector[obj.pos]= obj.result;
-
+          this.open.delete( obj.pos);
+      } else{
+        this.sleeper--;
       }
-      this.open--;
-      return run(this.running);
 
+      return run(this.running);
     })
     .catch((err) => {
       debug("fehler", err);
-        this.open--;
-        this.parallel = 0;
-        this.errcollector.push(err);
+        this.open.delete(err.pos);
+          this.errcollector.push(err);
+
+          if (this.errcollector.length >= this.errorlimit ) {
+              this.parallel = 0; //stop working
+          }
+
         return run(this.running);
-
-
     });
-
 
     const run = (iter) => Promise.resolve()
       .then(() => {
-        while ( this.open < this.parallel && ! startgen.next().done) {
-            this.open++;
+
+        while ( this.sleeper === 0 && this.open.size < this.parallel && ! startgen.next().done) {
+          debug("starting");
         }
 
-        if ( this.open <= 0) {
+        if ( this.sleeper === 0 && this.open.size === 0) {
           debug("ablauf fertig",this.collector.length);
-          if (this.errcollector.length) {
-            throw this.errcollector[0];
+          if (this.errcollector.length >= this.errorlimit ) {
+            throw this.errcollector;
           } else {
             return Promise.resolve(this.collector);
           }
@@ -99,8 +112,7 @@ class Controller extends EventEmitter {
           if ( iter === this.running){
             debug("leerlauf", iter);
           }
-            return waiter()
-          ;
+            return waiter();
       }
       })
           ;
@@ -114,11 +126,12 @@ class Controller extends EventEmitter {
       limit: this.limit,
       parallel: this.parallel,
       offen: this.running-this.collector.length,
-      openrun: this.open,
+      openrun: [...this.open.keys()],
       gesamt: this.collector.length,
       fehler: this.errcollector.length,
       pos: this.running,
-      sleep: this.sleepval
+      sleep: this.sleeper,
+      //cpu: this.startUsage=process.cpuUsage(this.startUsage)
     };
 
   }
@@ -126,6 +139,5 @@ class Controller extends EventEmitter {
 
 module.exports=function factory(options){
 
-  const controller = new Controller(options);
- return controller;
+ return new Controller(options);
 };

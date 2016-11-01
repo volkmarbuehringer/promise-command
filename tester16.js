@@ -16,7 +16,8 @@ const pool = new Pool({
 
 const controller =require("./controller.js")({
   parallel: 30,
-  limit: 3000
+  limit: 3000,
+  errorlimit: 1
 });
 
 
@@ -76,7 +77,7 @@ const differ = (obj) => Promise.resolve()
   .then(() => obj);
 
 
-const la =
+const crawler =
   (obj) => Promise.resolve(obj)
   .then((obj) => {
     obj.start = moment.now("X");
@@ -84,12 +85,11 @@ const la =
 
     return obj;
   })
-  .then((obj) =>  tester(obj).then(()=>obj) /*  superrequest({
+  .then((obj) =>  tester(obj).then(()=>obj) /* superrequest({
       uri: obj.url
     }).then((res) => Object.assign(obj, {
       res
-    }))
-*/
+    }))*/
     .catch((err) => Object.assign(obj, {
       message: err.message
     }))
@@ -107,10 +107,17 @@ pool.on("error", (error, client) => {
 
 function *starter(res,  dann=moment.now("X")) {
 
-  for (let i = 0; i < 3; i++) {
-      yield *controller.warten(dann + i * 200000);
-      yield *controller.startarr(res,la);
-  }
+ try{
+   for (let i = 0; i < 2; i++) {
+       yield *controller.waiter(dann + i * 200000);
+       yield *controller.startAll(res,crawler);
+   }
+ }
+ catch( e){
+   if ( e !== "End"){
+     throw e;
+   }
+ }
 
 }
 
@@ -118,10 +125,10 @@ Promise.resolve()
   .then(() => pool.query("select 'http://'||url as url from weburl order by url"))
   .then((res) => controller.runner(starter(res.rows)))
   .then((x) => {
-    pino.info(x, "alles fertig");
+    pino.info(x, "finished");
     pool.end();
   })
   .catch((err) => {
     pool.end();
-    pino.error(err, "fehler ende");
+    pino.error(err, "exit with error");
   });
