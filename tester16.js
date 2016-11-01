@@ -16,8 +16,8 @@ const pool = new Pool({
 
 const controller =require("./controller.js")({
   parallel: 30,
-  limit: 3000,
-  errorlimit: 1
+  limit: 300,
+  errorlimit: 10
 });
 
 
@@ -48,15 +48,6 @@ const superrequest = request.defaults({
 //Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1
 
 
-const tester = (x) => new Promise((resolve, reject) => setTimeout(() => {
-  if (Math.random() < 0.02) {
-    return reject({
-      message: "kaputti"
-    });
-  } else {
-    return resolve(x);
-  }
-}, Math.random() * 5000 + 10));
 
 const differ = (obj) => Promise.resolve()
   .then(() => {
@@ -85,14 +76,15 @@ const crawler =
 
     return obj;
   })
-  .then((obj) =>  tester(obj).then(()=>obj) /* superrequest({
+  .then((obj) =>  controller.tester(obj)
+  .then(()=>obj) /* superrequest({
       uri: obj.url
     }).then((res) => Object.assign(obj, {
       res
     }))*/
-    .catch((err) => Object.assign(obj, {
-      message: err.message
-    }))
+  //  .catch((err) => Object.assign(obj, {
+  //    message: err.message
+  //  }))
   )
   .then(differ);
 

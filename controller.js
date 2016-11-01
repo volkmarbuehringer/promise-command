@@ -12,7 +12,8 @@ class Controller extends EventEmitter {
     const {
       parallel,
       limit,
-      errorlimit
+      errorlimit,
+      errhandler
     } = param;
     this.sleeper=0;
     this.open = new Map();
@@ -22,9 +23,10 @@ class Controller extends EventEmitter {
     this.collector = [];
     this.errcollector = [];
     this.errorlimit = errorlimit||1;
+    this.errhandler=errhandler||((err)=>err);
   }
 
-startOne( fun,c ){
+startOne( fun,c ){  //start function with object and supply event emit after end
     const temp = this.running++;
 
     if (temp >=  this.limit ){
@@ -33,13 +35,13 @@ startOne( fun,c ){
 
   this.open.set(temp,c); //store running object
   return fun(c)
-    .then((res) => this.emit("arbeiten", null, res,temp))
-    .catch((err) => this.emit("arbeiten", err));
+    .then((res) => this.emit("arbeiten", null, res,temp))  // emit result
+    .catch((err) => this.emit("arbeiten", err,null,temp));  // emit error
 
 
 }
 
-*startAll( webber,fun){
+*startAll( webber,fun){  //start  function with an iterator n times
   this.sleepval=null;
   for ( const c of  webber) {
     yield this.startOne(fun,c);
@@ -49,88 +51,112 @@ startOne( fun,c ){
 
 
 
-*waiter(starttim){
+*waiter(starttim){  //block with a sleep function, if starttime is not yet reached
   const timeouter = (p) => new Promise((resolve) => setTimeout(resolve, p));
 
   if ((this.sleepval = (starttim - moment.now("X"))) > 0) {
     this.sleeper++;
     yield timeouter(this.sleepval)
-      .then(() => this.emit("arbeiten"));
+      .then(() => this.emit("arbeiten"));  // after sleeping emit event
   }
 
 }
 
+/* run controlled by a generator function, which supplies the promises*/
+
 
   runner(startgen) {
+// wait for finished promise,
+// catch the promise after run and do end handling of the promise
 
     const waiter = () => new Promise((resolve, reject) => this.once("arbeiten", (err, result,pos) =>err ? reject({err,pos})
     : resolve({result, pos  })))
+    .catch((err) => {
+      debug("caughterr", err);
+            //store error
+
+          if (this.errcollector.push(err.err) >= this.errorlimit ) {
+              this.parallel = 0; //stop working, too many errors, but wait until finished
+          }
+              return this.errhandler(err);  //repeat
+
+    })
     .then((obj) => {
 
-      debug("nach ausfür",  obj);
+      //debug("caught",  obj);
 
-    if (obj.pos) {
-        if (this.collector[obj.pos] !== undefined ){
-          throw new Error("internal err");
-        }
-        this.collector[obj.pos]= obj.result;
-          this.open.delete( obj.pos);
-      } else{
+    if ("pos" in obj && obj.pos != undefined ) {
+       if ( "result" in obj){
+             this.collector[obj.pos]= obj.result; //store endresult in order of start like Promise.all
+       }
+
+          this.open.delete( obj.pos);  //remove from map of running
+      }       else {  // no work, only sleep function
         this.sleeper--;
       }
 
-      return run(this.running);
+      return run(this.running);  //repeat until end reached
     })
-    .catch((err) => {
-      debug("fehler", err);
-        this.open.delete(err.pos);
-          this.errcollector.push(err);
+  ;
 
-          if (this.errcollector.length >= this.errorlimit ) {
-              this.parallel = 0; //stop working
-          }
-
-        return run(this.running);
-    });
+  // fetch promises from generator with limited parallelism
 
     const run = (iter) => Promise.resolve()
       .then(() => {
 
         while ( this.sleeper === 0 && this.open.size < this.parallel && ! startgen.next().done) {
-          debug("starting");
+          debug("starting %d", this.running);
         }
 
+        //check for endcondition of the run
         if ( this.sleeper === 0 && this.open.size === 0) {
-          debug("ablauf fertig",this.collector.length);
-          if (this.errcollector.length >= this.errorlimit ) {
-            throw this.errcollector;
-          } else {
+
+          if (this.errcollector.length >= this.errorlimit ) { //throw with error
+              debug("finished with error %d",this.errcollector.length);
+            throw { errors: this.errcollector,
+            position: this.running };
+          } else {  // return the array of results
+              debug("finished with gen",this.collector.length);
             return Promise.resolve(this.collector);
           }
 
-        } else {
+        } else { // repeat if end conditition is not reached
           if ( iter === this.running){
-            debug("leerlauf", iter);
+            debug("no new started", iter);
           }
-            return waiter();
+            return waiter(); //wait for new results
       }
       })
-          ;
+            ;
 
-    return run(this.running);
+    return run(this.running);  // start the run
 
   }
 
-  statistik() {
+
+   tester (x) {  // supply test function
+     return new Promise((resolve, reject) => setTimeout(() => {
+    if (Math.random() < 0.02) {
+      return reject({
+        message: "kaputti"+this.running
+      });
+    } else {
+      return resolve(x);
+    }
+  }, Math.random() * 3000 ));
+}
+
+  statistik() { //current statistics of  run
     return {
       limit: this.limit,
       parallel: this.parallel,
-      offen: this.running-this.collector.length,
-      openrun: [...this.open.keys()],
-      gesamt: this.collector.length,
-      fehler: this.errcollector.length,
-      pos: this.running,
-      sleep: this.sleeper,
+      errorlimit : this.errorlimit,
+      notReady: this.running-this.collector.length,  //number still in work
+      openrun: [...this.open.keys()],  // ids which are still running (oldest first)
+      finished: this.collector.length, //number of finished
+      errors: this.errcollector.length,  //number of errors
+      lastStarted: this.running,  //last id which was started
+      sleeps: this.sleeper,  //number of sleep functions which are blocking
       //cpu: this.startUsage=process.cpuUsage(this.startUsage)
     };
 
