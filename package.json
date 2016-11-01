@@ -1,12 +1,11 @@
 {
   "name": "promise-command",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "parallel execution of ES6 Promises without Promise.all",
   "main": "index.js",
   "scripts": {
     "test": "node test/tester1.js"
   },
-
   "author": {
     "name": "Volkmar Bühringer",
     "email": "volkmar.buehringer@prounix.de"
@@ -26,7 +25,6 @@
     "parallel",
     "control"
   ],
-  "main": "index.js",
   "directories": {
     "lib": "lib",
     "test": "test/spec"
@@ -37,6 +35,6 @@
   },
   "devDependencies": {
     "eslint": "^3.9.0",
-      "pino": "^2.13.0"
-    }
+    "pino": "^2.13.0"
+  }
 }
