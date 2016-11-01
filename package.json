@@ -1,13 +1,36 @@
 {
-  "name": "Promise-command",
+  "name": "promise-command",
   "version": "1.0.0",
   "description": "parallel execution of ES6 Promises without Promise.all",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+
+  "author": {
+    "name": "Volkmar Bühringer",
+    "email": "volkmar.buehringer@prounix.de"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/volkmarbuehringer/promise-command",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/volkmarbuehringer/promise-command.git"
+  },
+  "bugs": {
+    "url": "https://github.com/volkmarbuehringer/promise-command/issues"
+  },
+  "keywords": [
+    "promises",
+    "es6",
+    "parallel",
+    "control"
+  ],
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test/spec"
+  },
   "dependencies": {
     "debug": "^2.2.0",
     "moment": "^2.15.1"

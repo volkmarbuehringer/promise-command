@@ -14,7 +14,7 @@ const pool = new Pool({
   idleTimeoutMillis: 10000 //close idle clie
 });
 
-const controller =require("./controller.js")({
+const controller =require("../lib/controller.js")({
   parallel: 30,
   limit: 300,
   errorlimit: 10
