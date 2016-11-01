@@ -4,7 +4,7 @@
   "description": "parallel execution of ES6 Promises without Promise.all",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/tester1.js"
   },
 
   "author": {
@@ -37,10 +37,6 @@
   },
   "devDependencies": {
     "eslint": "^3.9.0",
-    "pg": "^6.1.0",
-    "pg-pool": "^1.5.0",
-    "pino": "^2.13.0",
-    "request": "^2.75.0",
-    "request-promise-native": "^1.0.3"
-  }
+      "pino": "^2.13.0"
+    }
 }
