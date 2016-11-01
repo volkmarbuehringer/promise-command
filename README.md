@@ -3,7 +3,7 @@ Parallel execution of ES6 promises without Promise.all
 
 ## Controlling parallel execution of promises 
 
-It allows control of parallelism like async.parallelLimit combined with better debug-capabilities and flexibility.
+It allows control of parallelism like async.parallelLimit combined with better debug-capabilities and more flexibility.
 
 ## Usage of ES6 features
 
@@ -11,15 +11,19 @@ it works only with node 6 and 7 with full es6-support
 
 It implements and uses following features:
 
+### es6-class with extenstion of EventEmitter
+the controller with all its variables is inside an es6-class. Every invocation produces a new controller-object which can be independently used.
+
 ### generator functions
 the user provides a generator function with generates calls of a user-defined function with an user supplied argument.
 The controller iterates the generator and produces parallel execution of a limited number of promises.
-There is a helper generator for iteration over an iterator and generating of executing promises.
-Also there is a helper for pausing execution until a specified point in time. During waiting the executing continues until nothing is in the pipeline.
+There is a helper generator for iteration over an used-supplied iterator which generates the different arguments for every function execution. 
+Inside the main generator different functions can be used.The user is in full controll. The only condition is that the function is promised based and .then and .catch can be appended.
+There is also a helper-generator for pausing execution until a specified point in time. During waiting the execution continues until the pipeline is empty.
 
 
 ### maps
-during execution every argument of the running functions together with an incrementing id is collected into map. After finishing of execution it is deleted from the map.
+during execution every argument of the running functions together with an incrementing id is collected into a map. After finishing of execution it is deleted from the map.
 The execution which takes the longest time is always at the beginning of the map present.
 Controlling and debugging of execution is very easy.
 
