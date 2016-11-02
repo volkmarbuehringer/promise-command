@@ -14,12 +14,11 @@ const pool = new Pool({
   idleTimeoutMillis: 10000 //close idle clie
 });
 
-const controller =require("../lib/controller.js")({
+const controller = require("../lib/controller.js")({
   parallel: 30,
   limit: 300,
   errorlimit: 10
 });
-
 
 
 setInterval(() => pino.info(controller.statistik(), "statistik"), 5000).unref();
@@ -28,7 +27,6 @@ process.on("unhandledRejection", (reason, p) => {
   pino.error(reason, "Unhandled Rejection at: Promise", p);
   // application specific logging, throwing an error, or other logic here
 });
-
 
 
 const agent = new http.Agent({
@@ -46,7 +44,6 @@ const superrequest = request.defaults({
 });
 
 //Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1
-
 
 
 const differ = (obj) => Promise.resolve()
@@ -76,15 +73,16 @@ const crawler =
 
     return obj;
   })
-  .then((obj) =>  controller.tester(obj)
-  .then(()=>obj) /* superrequest({
-      uri: obj.url
-    }).then((res) => Object.assign(obj, {
-      res
-    }))*/
-  //  .catch((err) => Object.assign(obj, {
-  //    message: err.message
-  //  }))
+  .then((obj) => controller.tester(obj)
+    .then(() => obj)
+    /* superrequest({
+         uri: obj.url
+       }).then((res) => Object.assign(obj, {
+         res
+       }))*/
+    //  .catch((err) => Object.assign(obj, {
+    //    message: err.message
+    //  }))
   )
   .then(differ);
 
@@ -94,22 +92,21 @@ const crawler =
 pool.on("error", (error, client) => {
   // handle this in the same way you would treat process.on('uncaughtException')
   // it is supplied the error as well as the idle client which received the error
-  pino.error(error, "pg-pool",client);
+  pino.error(error, "pg-pool", client);
 });
 
-function *starter(res,  dann=moment.now("X")) {
+function* starter(res, dann = moment.now("X")) {
 
- try{
-   for (let i = 0; i < 2; i++) {
-       yield *controller.waiter(dann + i * 200000);
-       yield *controller.startAll(res,crawler);
-   }
- }
- catch( e){
-   if ( e !== "End"){
-     throw e;
-   }
- }
+  try {
+    for (let i = 0; i < 2; i++) {
+      yield* controller.waiter(dann + i * 200000);
+      yield* controller.startAll(res, crawler);
+    }
+  } catch (e) {
+    if (e !== "End") {
+      throw e;
+    }
+  }
 
 }
 
