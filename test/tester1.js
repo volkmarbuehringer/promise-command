@@ -7,7 +7,7 @@ const pino = require("pino")();
 
 const controller = require("../lib/controller.js")({
   parallel: 30,
-  limit: 3000,
+  limit: 300000,
   errorlimit: 100
 });
 
@@ -42,8 +42,8 @@ const crawler =
 function* starter(res, dann = moment.now("X")) {
 
   try {
-    for (let i = 0; i < 2; i++) {
-      yield* controller.waiter(dann + i * 200000);
+    for (let i = 0; i < 30; i++) {
+      yield* controller.waiter(dann + i * 20000);
       yield* controller.startAll(res, crawler);
     }
   } catch (e) {
@@ -58,7 +58,7 @@ function* starter(res, dann = moment.now("X")) {
 Promise.resolve()
   .then(() => {
     const daten = [];
-    let count = 1000;
+    let count = 10000;
     if (process.argv.length === 3) {
       count = parseInt(process.argv[2]);
     }
