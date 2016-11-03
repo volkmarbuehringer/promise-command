@@ -6,7 +6,7 @@ const moment = require("moment");
 const pino = require("pino")();
 
 const controller = require("../lib/controller.js")({
-  parallel: 30,
+  parallel: 50,
   limit: 300000,
   errorlimit: 100
 });
