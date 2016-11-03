@@ -41,10 +41,10 @@ const crawler =
 
 function* starter(res, dann = moment.now("X")) {
 
-    for (let i = 0; i < 10; i++) {
-      yield* controller.waiter(dann + i * 20000);
-      yield* controller.startAll(res, crawler);
-    }
+  for (let i = 0; i < 10; i++) {
+    yield* controller.waiter(dann + i * 20000);
+    yield* controller.startAll(res, crawler);
+  }
 
 }
 
