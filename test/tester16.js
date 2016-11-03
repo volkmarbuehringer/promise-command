@@ -97,18 +97,11 @@ pool.on("error", (error, client) => {
 
 function* starter(res, dann = moment.now("X")) {
 
-  try {
     for (let i = 0; i < 2; i++) {
       yield* controller.waiter(dann + i * 200000);
       yield* controller.startAll(res, crawler);
     }
-  } catch (e) {
-    if (e !== "End") {
-      throw e;
-    }
   }
-
-}
 
 Promise.resolve()
   .then(() => pool.query("select 'http://'||url as url from weburl order by url"))
