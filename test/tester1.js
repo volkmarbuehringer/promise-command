@@ -12,7 +12,7 @@ const controller = require("../lib/controller.js")({
 });
 
 
-setInterval(() => pino.info(controller.statistik(), "statistik"), 5000).unref();
+setInterval(() => pino.info(controller.statistik(), "statistik"), 5000); //.unref();
 
 process.on("unhandledRejection", (reason, p) => {
   pino.error(reason, "Unhandled Rejection at: Promise", p);
