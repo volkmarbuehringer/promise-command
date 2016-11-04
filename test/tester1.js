@@ -6,13 +6,14 @@ const moment = require("moment");
 const pino = require("pino")();
 
 const controller = require("../lib/controller.js")({
-  parallel: 50,
+  parallel: 100,
   limit: 3000000,
-  errorlimit: 100
+  errorlimit: 100,
+  collect: false
 });
 
 
-setInterval(() => pino.info(controller.statistik(), "statistik"), 5000); //.unref();
+setInterval(() => pino.info(controller.statistik(), "statistik"), 5000).unref();
 
 process.on("unhandledRejection", (reason, p) => {
   pino.error(reason, "Unhandled Rejection at: Promise", p);

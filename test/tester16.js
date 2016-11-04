@@ -15,8 +15,8 @@ const pool = new Pool({
 });
 
 const controller = require("../lib/controller.js")({
-  parallel: 30,
-  limit: 300,
+  parallel: 40,
+  limit: 30000,
   errorlimit: 10
 });
 
@@ -73,18 +73,13 @@ const crawler =
 
     return obj;
   })
-  .then((obj) => controller.tester(obj)
-    .then(() => obj)
-    /* superrequest({
+.then((obj) =>      superrequest({
          uri: obj.url
-       }).then((res) => Object.assign(obj, {
-         res
-       }))*/
-    //  .catch((err) => Object.assign(obj, {
-    //    message: err.message
-    //  }))
-  )
-  .then(differ);
+       }))
+      .catch((err) => Object.assign(obj, {
+      message: err.message
+      }))
+    .then(differ);
 
 
 //pino.info("vor start %d", webber.length);
