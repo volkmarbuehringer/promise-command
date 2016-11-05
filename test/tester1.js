@@ -9,7 +9,7 @@ const controller = require("../lib/controller.js")({
   parallel: 100,
   limit: 3000000,
   errorlimit: 100,
-  collect: false
+  collect: true
 });
 
 
@@ -26,14 +26,14 @@ process.on("unhandledRejection", (reason, p) => {
 const crawler =
   (obj) => Promise.resolve(obj)
   .then((obj) => {
-    obj.start = moment.now("X");
+    obj.start = process.hrtime();
     obj.message = null;
 
     return obj;
   })
   .then((obj) => controller.tester(obj)
     .then(() => Object.assign(obj, {
-      ende: moment.now("X")
+      diff: process.hrtime(obj.start)
     }))
   );
 
