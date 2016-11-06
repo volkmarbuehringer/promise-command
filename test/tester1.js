@@ -5,8 +5,17 @@ const debug = require("debug")("test14");
 const moment = require("moment");
 const pino = require("pino")();
 
-const controller = require("../lib/controller.js")({
-  parallel: 100,
+class Controller1 extends require("../lib/controller.js"){
+  constructor(param) {
+    super(param);
+  }
+  objHandler(pos,obj){  //add timing 
+     return Object.assign(obj,{ diff: process.hrtime(pos.start)});
+  }
+}
+
+const controller = new Controller1({
+  parallel: 200,
   limit: 3000000,
   errorlimit: 100,
   collect: true
@@ -26,16 +35,11 @@ process.on("unhandledRejection", (reason, p) => {
 const crawler =
   (obj) => Promise.resolve(obj)
   .then((obj) => {
-    obj.start = process.hrtime();
     obj.message = null;
 
     return obj;
   })
-  .then((obj) => controller.tester(obj)
-    .then(() => Object.assign(obj, {
-      diff: process.hrtime(obj.start)
-    }))
-  );
+  .then((obj) => controller.tester(obj)    );
 
 
 // user supplied generator function, which iterates 2 times over the test array and pauses
