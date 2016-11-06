@@ -9,6 +9,112 @@ It allows control of parallelism like async.parallelLimit combined with better d
 
 it works only with node 6 and 7 with full es6-support
 
+## Example:
+
+const Controller1 = require("promise-command");
+
+const crawler =
+  (obj) => Promise.resolve(obj)
+  .then((obj) => {
+    obj.message = null;
+
+    return obj;
+  })
+  .then((obj) => controller.tester(obj));
+
+const controller = new Controller({
+  parallel: 200,
+  limit: 3000000,
+  fun: crawler
+});
+
+Promise.resolve()
+  .then(() => {
+    controller.daten = [];
+    let count = 1000;
+     for (let i = 0; i < count; i++) {
+      controller.daten.push({
+        id: i
+      });
+    }
+
+    return controller.daten;
+  })
+  .then((res) => controller.runner(res))
+  .then((x) => {
+    console.log("finished",x);
+  })
+  .catch((err) => {
+    console.error("exit with error",err);
+  });
+
+## Overwriting the controller-class:
+
+class Controller1 extends require("promise-command") {
+  constructor(param) {
+    super(param);
+      this.collector = [];  //collect the results
+    }
+    
+    // overwrting of error handler
+  errHandler(pos, err) {
+    debug("error",err,pos);
+    delete this.daten[pos.pos];  // delete the data  with errors in the source for repeating
+    if ( this.errcollector.size > 30 ){  //stop only after 30 errors
+      return true;
+    } else {
+      return false;
+    }
+  }
+  
+  
+  //user handling of every completed object
+  objHandler(pos, obj,input) { 
+    //debug("hier da",pos,obj);
+    
+    this.collector[pos.id] = Object.assign(obj, {
+      diff: process.hrtime(pos.start) //add timing
+    }); //store endresult in order of start like Promise.all
+
+  }
+  
+  //overwrite handling of end results
+  endHandler(){
+    if (this.errcollector.size > 30) { //throw with error
+      debug("finished with error %d", this.errcollector.size);
+      this.emit("ende", [...this.errcollector.entries()]);
+        } else { // return the array of results
+      debug("finished with gen");
+          this.emit("ende", null,this.collector);
+    }
+
+  }
+
+//overwrite data generation
+  *
+  dataGenerator(res) {
+   let  now = moment.now("X");
+    for (let i = 0; i < 30; i++) {   // repeat iteration 30 times over data
+
+        if ( i> 0){   // every repeat after 10 secs
+              yield* this.waiter(10000 - (moment.now("X") - now));
+              debug("remaining data",this.collector.length);
+          res = this.collector;  // replace input data with finished data, throw away errors and hanging functions
+          this.collector=[]; // clean collector
+
+        }
+
+      yield* this.startAll(res);   // new iteration over data
+
+     now = moment.now("X");
+    }
+
+
+  }
+}
+
+
+
 It implements and uses following features:
 
 ### es6-class with extenstion of EventEmitter
