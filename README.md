@@ -14,23 +14,23 @@ it works only with node 6 and 7 with full es6-support
 ``` javascript
 const Controller = require("promise-command");
 
-const crawler =
+const crawler =  //function for parallel execution with promises
   (obj) => Promise.resolve(obj)
   .then((obj) => {
     obj.message = null;
 
     return obj;
   })
-  .then((obj) => controller.tester(obj));
+  .then((obj) => controller.tester(obj));  //use test function
 
 const controller = new Controller({
-  parallel: 200,
-  limit: 3000000,
-  fun: crawler
+  parallel: 200,  // maximal parallism
+  limit: 3000000,  // limit of executions
+  fun: crawler  //function to use
 });
 
 Promise.resolve()
-  .then(() => {
+  .then(() => {  // prepare array of data
     controller.daten = [];
     let count = 1000;
      for (let i = 0; i < count; i++) {
@@ -40,8 +40,8 @@ Promise.resolve()
     }
     return controller.daten;
   })
-  .then((res) => controller.runner(res))
-  .then((x) => {
+  .then((res) => controller.runner(res))   //execute function over array
+  .then((x) => {  // await results after completion
     console.log("finished",x);
   })
   .catch((err) => {
