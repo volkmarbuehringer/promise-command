@@ -23,8 +23,8 @@ const pool = new Pool({
 
 
 const agent = new http.Agent({
-//      keepAlive: true,
-//    maxFreeSockets: 500
+  //      keepAlive: true,
+  //    maxFreeSockets: 500
 });
 
 let controller = require("promise-command")({
@@ -46,7 +46,7 @@ const superrequest = request.defaults({
 */
 
 needle.defaults({
-//  agent,
+  //  agent,
   open_timeout: 500,
   read_timeout: 100,
   headers: {
@@ -54,14 +54,14 @@ needle.defaults({
   }
 });
 
-const needleget = (obj)=>new Promise((resolve, reject) => needle.get("http://localhost:4000/los/"+obj.l_id,(err, result) => err ? reject(err) :
-   result.statusCode===200? resolve(result.body):reject( new Error("fehler bei get")) ));
+const needleget = (obj) => new Promise((resolve, reject) => needle.get("http://localhost:4000/los/" + obj.l_id, (err, result) => err ? reject(err) :
+  result.statusCode === 200 ? resolve(result.body) : reject(new Error("fehler bei get"))));
 
-   const needleput = (obj)=>new Promise((resolve, reject) => needle.put("http://localhost:4000/los/"+obj.l_id,{
-     "l_iban":"wi555555555555555",
-     "lgag": 47171
- },(err, result) => err ? reject(err) :
-    result.statusCode===200? resolve(result.body):reject( new Error("fehler bei put")) ));
+const needleput = (obj) => new Promise((resolve, reject) => needle.put("http://localhost:4000/los/" + obj.l_id, {
+    "l_iban": "wi555555555555555",
+    "lgag": 47171
+  }, (err, result) => err ? reject(err) :
+  result.statusCode === 200 ? resolve(result.body) : reject(new Error("fehler bei put"))));
 
 
 setInterval(() => pino.info(controller.statistik(), "statistik"), 5000).unref();
@@ -112,62 +112,63 @@ const crawler =
 
 const crawler1 =
   (obj) => Promise.resolve(obj)
-  .then((obj) => Object.assign(obj,
-    { start: moment.now("X"),message: null}))
+  .then((obj) => Object.assign(obj, {
+    start: moment.now("X"),
+    message: null
+  }))
   .then((obj) => needleget(obj))
-//.then((obj=>controller.tester(obj)))
-  ;
-
-  const crawler =
-    (obj) => Promise.resolve(obj)
-    .then((obj) => Object.assign(obj,
-      { start: moment.now("X"),message: null}))
-    .then((obj) => needleput(obj))
   //.then((obj=>controller.tester(obj)))
-    ;
+;
 
-
-
+const crawler =
+  (obj) => Promise.resolve(obj)
+  .then((obj) => Object.assign(obj, {
+    start: moment.now("X"),
+    message: null
+  }))
+  .then((obj) => needleput(obj))
+  //.then((obj=>controller.tester(obj)))
+;
 
 
 // user supplied generator function, which iterates 2 times over the test array and pauses
 
 function* starter(res, dann = moment.now("X")) {
 
-    for (let i = 0; i < 5; i++) {
-      yield* controller.waiter(dann + i * 40000);
+  for (let i = 0; i < 5; i++) {
+    yield* controller.waiter(dann + i * 40000);
 
-      for (const c of res) {
-        yield controller.startOne(crawler, c);
-        yield controller.startOne(crawler1, c);
-      }
-      //yield* controller.startAll(res, crawler);
-      //yield* controller.startAll(res, crawler1);
+    for (const c of res) {
+      yield controller.startOne(crawler, c);
+      yield controller.startOne(crawler1, c);
     }
+    //yield* controller.startAll(res, crawler);
+    //yield* controller.startAll(res, crawler1);
+  }
   return;
 }
 
-let count=100000;
+let count = 100000;
 if (process.argv.length === 3) {
-    count = parseInt(process.argv[2]);
-  }
+  count = parseInt(process.argv[2]);
+}
 
 //main code
 Promise.resolve()
-.then(() => pool.query("select * from edv.los limit $1",[count]))
-//  .then((obj) => needleget(obj.rows[0]))
+  .then(() => pool.query("select * from edv.los limit $1", [count]))
+  //  .then((obj) => needleget(obj.rows[0]))
   .then((res) => controller.runner(starter(res.rows)))
   .then((x) => {
-    if ( controller.errcollector.length > 0 ){
+    if (controller.errcollector.length > 0) {
       pino.info(controller.errcollector, "finished with error");
     } else {
-        pino.info(x, "finished");
+      pino.info(x, "finished");
     }
 
 
     pool.end();
   })
   .catch((err) => {
-    pino.error(err[0],"exit with errors: %d",err.length);
+    pino.error(err[0], "exit with errors: %d", err.length);
     pool.end();
   });

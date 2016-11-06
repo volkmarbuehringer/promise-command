@@ -31,10 +31,11 @@
   },
   "dependencies": {
     "debug": "^2.2.0",
-    "moment": "^2.15.1"
   },
   "devDependencies": {
     "eslint": "^3.9.0",
-    "pino": "^2.13.0"
+    "pino": "^2.13.0",
+    "moment": "^2.15.1"
+
   }
 }

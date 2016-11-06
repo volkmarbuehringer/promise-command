@@ -73,13 +73,13 @@ const crawler =
 
     return obj;
   })
-.then((obj) =>      superrequest({
-         uri: obj.url
-       }))
-      .catch((err) => Object.assign(obj, {
-      message: err.message
-      }))
-    .then(differ);
+  .then((obj) => superrequest({
+    uri: obj.url
+  }))
+  .catch((err) => Object.assign(obj, {
+    message: err.message
+  }))
+  .then(differ);
 
 
 //pino.info("vor start %d", webber.length);

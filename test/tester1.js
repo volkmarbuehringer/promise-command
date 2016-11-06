@@ -1,26 +1,8 @@
 "use strict";
 
 
-const debug = require("debug")("test14");
-const moment = require("moment");
 const pino = require("pino")();
-
-class Controller1 extends require("../lib/controller.js"){
-  constructor(param) {
-    super(param);
-  }
-  objHandler(pos,obj){  //add timing 
-     return Object.assign(obj,{ diff: process.hrtime(pos.start)});
-  }
-}
-
-const controller = new Controller1({
-  parallel: 200,
-  limit: 3000000,
-  errorlimit: 100,
-  collect: true
-});
-
+const Controller1 = require("./controller1.js");
 
 setInterval(() => pino.info(controller.statistik(), "statistik"), 5000).unref();
 
@@ -39,36 +21,35 @@ const crawler =
 
     return obj;
   })
-  .then((obj) => controller.tester(obj)    );
+  .then((obj) => controller.tester(obj));
+
+const controller = new Controller1({
+  parallel: 200,
+  limit: 3000000,
+  fun: crawler
+});
 
 
 // user supplied generator function, which iterates 2 times over the test array and pauses
 
-function* starter(res, dann = moment.now("X")) {
-
-  for (let i = 0; i < 10; i++) {
-    yield* controller.waiter(dann + i * 20000);
-    yield* controller.startAll(res, crawler);
-  }
-
-}
 
 //main code
 Promise.resolve()
   .then(() => {
-    const daten = [];
-    let count = 30000;
+    controller.daten = [];
+    let count = 1000;
     if (process.argv.length === 3) {
       count = parseInt(process.argv[2]);
     }
     for (let i = 0; i < count; i++) {
-      daten.push({
+      controller.daten.push({
         id: i
       });
     }
-    return daten;
+
+    return controller.daten;
   })
-  .then((res) => controller.runner(starter(res)))
+  .then((res) => controller.runner(res))
   .then((x) => {
     pino.info(x, "finished");
   })
