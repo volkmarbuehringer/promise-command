@@ -7,13 +7,13 @@ const moment = require("moment");
 class Controller1 extends require("../lib/controller.js") {
   constructor(param) {
     super(param);
-    this.errprob = 0.001;
+    this.errprob = 0.01;
     this.collector = [];
     }
   errHandler(pos, err) {
     debug("error",err,pos);
     delete this.daten[pos.pos];
-    if ( this.errcollector.length > 30 ){
+    if ( this.errcollector.size > 30 ){
       return true;
     } else {
       return false;
