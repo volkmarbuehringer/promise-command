@@ -9,10 +9,10 @@ It allows control of parallelism like async.parallelLimit combined with better d
 
 it works only with node 6 and 7 with full es6-support
 
-## Example:
+## Simple-Example:
 
 ``` javascript
-const Controller1 = require("promise-command");
+const Controller = require("promise-command");
 
 const crawler =
   (obj) => Promise.resolve(obj)
@@ -48,7 +48,7 @@ Promise.resolve()
     console.error("exit with error",err);
   });
 ```
-
+## Overwriting the Controller-Class
 
 ``` javascript
 class Controller1 extends require("promise-command") {
