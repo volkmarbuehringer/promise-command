@@ -5,7 +5,7 @@ const http = require("http");
 const pino = require("pino")();
 const Pool = require("pg-pool");
 
-const debug = require("debug")("test14");
+const debug = require("debug")("tester16");
 const moment = require("moment");
 
 const pool = new Pool({
@@ -14,11 +14,7 @@ const pool = new Pool({
   idleTimeoutMillis: 10000 //close idle clie
 });
 
-const controller = require("../lib/controller.js")({
-  parallel: 40,
-  limit: 30000,
-  errorlimit: 10
-});
+
 
 
 setInterval(() => pino.info(controller.statistik(), "statistik"), 5000).unref();
@@ -37,7 +33,7 @@ const agent = new http.Agent({
 
 const superrequest = request.defaults({
   agent,
-  timeout: 6000,
+//  timeout: 6000,
   headers: {
     "User-Agent": "Mozilla/5.0 (Windows NT 6.4; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2225.0 Safari/537.36"
   }
@@ -62,7 +58,13 @@ const differ = (obj) => Promise.resolve()
   .then(() => pool.query(`insert into weblog
 ( start, ende, url , message ,len )
           values($1,$2,$3,$4,$5 )`, [obj.start, obj.ende, obj.url, obj.message || "", obj.len]))
-  .then(() => obj);
+  .then(() => {
+    if ( obj.message){
+      throw new Error("Fehler:"+obj.message);
+    } else {
+      return obj;
+    }
+  });
 
 
 const crawler =
@@ -73,13 +75,14 @@ const crawler =
 
     return obj;
   })
-  .then((obj) => superrequest({
-    uri: obj.url
-  }))
-  .catch((err) => Object.assign(obj, {
-    message: err.message
-  }))
-  .then(differ);
+.then((obj) =>      superrequest({
+         uri: obj.url
+       }))
+       .then( (res)=>Object.assign(obj,{res}))
+      .catch((err) => Object.assign(obj, {
+      message: err.message
+      }))
+    .then(differ);
 
 
 //pino.info("vor start %d", webber.length);
@@ -90,17 +93,17 @@ pool.on("error", (error, client) => {
   pino.error(error, "pg-pool", client);
 });
 
-function* starter(res, dann = moment.now("X")) {
+const Controller = require("./controller2.js");
 
-  for (let i = 0; i < 2; i++) {
-    yield* controller.waiter(dann + i * 200000);
-    yield* controller.startAll(res, crawler);
-  }
-}
+const controller= new Controller({
+  parallel: 40,
+  limit: 30000,
+  fun: crawler
+});
 
 Promise.resolve()
   .then(() => pool.query("select 'http://'||url as url from weburl order by url"))
-  .then((res) => controller.runner(starter(res.rows)))
+  .then((res) => controller.runner(res.rows))
   .then((x) => {
     pino.info(x, "finished");
     pool.end();
