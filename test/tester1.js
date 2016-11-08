@@ -24,7 +24,7 @@ const crawler =
   .then((obj) => controller.tester(obj));
 
 const controller = new Controller1({
-  parallel: 200,
+  parallel: 80,
   limit: 3000000,
   fun: crawler
 });
@@ -37,7 +37,7 @@ const controller = new Controller1({
 Promise.resolve()
   .then(() => {
     controller.daten = [];
-    let count = 1000;
+    let count = 10000;
     if (process.argv.length === 3) {
       count = parseInt(process.argv[2]);
     }

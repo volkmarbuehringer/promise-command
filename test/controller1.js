@@ -7,9 +7,9 @@ const moment = require("moment");
 class Controller1 extends require("../lib/controller.js") {
   constructor(param) {
     super(param);
-    this.errprob = 0.01;
+    this.errprob = 0.0001;
     this.collector = [];
-    
+
         this.removed=[];
     setInterval(this.checkRunning.bind(this),
       1000,  (entry)=>{
@@ -61,7 +61,7 @@ this.collector.push(input);
     for (let i = 0; i < 30; i++) {
 
         if ( i> 0){
-              yield* this.waiter(10000 - (moment.now("X") - now));
+            //  yield* this.waiter(10000 - (moment.now("X") - now));
               debug("itermediatore",this.collector.length);
           res = this.collector;
           this.collector=[];
@@ -71,7 +71,7 @@ this.collector.push(input);
       yield* this.startAll(res);
 
      now = moment.now("X");
-    }
+   }
 
 
   }
