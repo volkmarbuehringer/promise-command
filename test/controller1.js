@@ -9,6 +9,21 @@ class Controller1 extends require("../lib/controller.js") {
     super(param);
     this.errprob = 0.01;
     this.collector = [];
+    
+        this.removed=[];
+    setInterval(this.checkRunning.bind(this),
+      1000,  (entry)=>{
+        //debug("longest",entry);
+        if ( entry[0].diff[0]>0 || entry[0].diff[1]>2e8 ){ //runs to long
+          debug("remove %d",this.removed.length,entry[0]);
+          this.removed.push( entry[1]);
+          return true;
+        } else {
+         return false;
+        }
+
+      },1).unref();
+
     }
   errHandler(pos, err) {
     debug("error",err,pos);
