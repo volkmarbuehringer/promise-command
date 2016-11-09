@@ -2,7 +2,7 @@
 
 
 const debug = require("debug")("controller1");
-const moment = require("moment");
+
 
 class Controller2 extends require("promise-command") {
   constructor(param) {
@@ -10,26 +10,23 @@ class Controller2 extends require("promise-command") {
     this.errprob = 0.0001;
     this.collector = [];
 
-        this.removed=new Map();
     setInterval(this.checkRunning.bind(this),
       1000,  (entry)=>{
-        //debug("longest",entry);
-        if ( entry[0].diff[0]>7  ){ //runs to long
-          debug("remove %d",this.removed.size,entry[0]);
-          this.removed.set( entry[0],entry[1]);
-          return true;
+
+        if ( entry[0].diff[0]<=5  ){ //runs to long
+                                  return true;
         } else {
-         return false;
+
+                this.parallel++;
+                return false;
         }
 
-      },1).unref();
+      }).unref();
 
     }
   errHandler(pos, err,input) {
-    debug("error",err,pos);
-    if ( this.removed.delete(pos)){
-      debug("hier noch geliefert err",pos);
-    }
+//    debug("error",err,pos);
+
     this.collector.push(input);
 
 
@@ -47,9 +44,6 @@ class Controller2 extends require("promise-command") {
       diff: process.hrtime(pos.start)
     }); //store endresult in order of start like Promise.all
 */
-if ( this.removed.delete(pos)){
-  debug("hier noch geliefert",pos);
-}
 this.collector.push(input);
 
   }
@@ -58,7 +52,7 @@ this.collector.push(input);
       debug("finished with error %d", this.errcollector.size);
       this.emit("ende", [...this.errcollector.values()]);
         } else { // return the array of results
-      debug("finished with gen: %d", this.removed.size);
+      debug("finished with gen" );
           this.emit("ende", null,this.collector);
     }
 
@@ -66,7 +60,7 @@ this.collector.push(input);
 
   *
   dataGenerator(res) {
-   let  now = moment.now("X");
+
     for (let i = 0; i < 30; i++) {
 
         if ( i> 0){
@@ -79,7 +73,7 @@ this.collector.push(input);
 
       yield* this.startAll(res);
 
-     now = moment.now("X");
+
    }
 
 
