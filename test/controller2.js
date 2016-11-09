@@ -14,8 +14,17 @@ class Controller2 extends require("promise-command") {
     setInterval(this.checkRunning.bind(this),
       1000,  (entry)=>{
         //debug("longest",entry);
-        if ( entry[0].diff[0]>7  ){ //runs to long
-          debug("remove %d",this.removed.size,entry[0]);
+          //debug( "remo",[...this.removed.keys()]);
+
+                    for ( const c of this.removed ){
+                      debug("lahm %d",this.removed.size,process.hrtime(c[0].start),c[0]);
+                      break;
+                    }
+
+          
+
+        if ( entry[0].diff[0]>6  ){ //runs to long
+        //  debug("remove %d",this.removed.size,entry[0]);
           this.removed.set( entry[0],entry[1]);
           return true;
         } else {
@@ -26,9 +35,9 @@ class Controller2 extends require("promise-command") {
 
     }
   errHandler(pos, err,input) {
-    debug("error",err,pos);
+    //debug("error",err,pos);
     if ( this.removed.delete(pos)){
-      debug("hier noch geliefert err",pos);
+      //debug("hier noch geliefert err",pos);
     }
     this.collector.push(input);
 
@@ -48,7 +57,7 @@ class Controller2 extends require("promise-command") {
     }); //store endresult in order of start like Promise.all
 */
 if ( this.removed.delete(pos)){
-  debug("hier noch geliefert",pos);
+  //debug("hier noch geliefert",pos);
 }
 this.collector.push(input);
 
