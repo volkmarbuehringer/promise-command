@@ -25,13 +25,20 @@ class Controller2 extends require("promise-command") {
       },1).unref();
 
     }
-  errHandler(pos, err) {
+  errHandler(pos, err,input) {
     debug("error",err,pos);
-    if ( this.errcollector.size > 30 ){
+    if ( this.removed.delete(pos)){
+      debug("hier noch geliefert err",pos);
+    }
+    this.collector.push(input);
+
+
+    if ( this.errcollector.size > 300 ){
       return true;
     } else {
       return false;
     }
+
   }
   objHandler(pos, obj,input) { //add timing
     //debug("hier da",pos,obj);
@@ -49,9 +56,9 @@ this.collector.push(input);
   endHandler(){
     if (this.errcollector.size > 30) { //throw with error
       debug("finished with error %d", this.errcollector.size);
-      this.emit("ende", [...this.errcollector.entries()]);
+      this.emit("ende", [...this.errcollector.values()]);
         } else { // return the array of results
-      debug("finished with gen");
+      debug("finished with gen: %d", this.removed.size);
           this.emit("ende", null,this.collector);
     }
 
