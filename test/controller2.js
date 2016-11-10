@@ -11,9 +11,9 @@ class Controller2 extends require("promise-command") {
     this.collector = [];
 
     setInterval(() => {
-      const erg = this.checkRunning(1);
+      const erg = this.checkRunning(6);
 
-      debug("longest", erg);
+      debug("longest %d", erg.length);
       this.parallel += erg.length;
 
     }, 1000).unref();
