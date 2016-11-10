@@ -4,7 +4,7 @@ const request = require("request-promise-native");
 const http = require("http");
 const pino = require("pino")();
 const Pool = require("pg-pool");
-const parseString= require("xml2js").parseString;
+const parseString = require("xml2js").parseString;
 
 const debug = require("debug")("tester16");
 const moment = require("moment");
@@ -14,8 +14,6 @@ const pool = new Pool({
   min: 10, //set min pool size to 4
   idleTimeoutMillis: 10000 //close idle clie
 });
-
-
 
 
 setInterval(() => pino.info(controller.statistik(), "statistik"), 5000).unref();
@@ -34,7 +32,7 @@ const agent = new http.Agent({
 
 const superrequest = request.defaults({
   agent,
-//  timeout: 6000,
+  //  timeout: 6000,
   headers: {
     "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1" //"Mozilla/5.0 (Windows NT 6.4; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2225.0 Safari/537.36"
   }
@@ -54,17 +52,19 @@ const differ = (obj) => Promise.resolve()
       obj.len = null;
     }
 
-    parseString( obj.res,{explicitArray:true},(err,result)=>{
+    parseString(obj.res, {
+      explicitArray: true
+    }, (err, result) => {
       //debug("hier",err,result);
     });
     //  debug(obj);
   })
   .then(() => pool.query(`insert into weblog
 ( start, ende, url , message ,len,data )
-          values($1,$2,$3,$4,$5,$6 )`, [obj.start, obj.ende, obj.url, obj.message || "", obj.len,obj.res||"" ]))
+          values($1,$2,$3,$4,$5,$6 )`, [obj.start, obj.ende, obj.url, obj.message || "", obj.len, obj.res || ""]))
   .then(() => {
-    if ( obj.message){
-      throw new Error("Fehler:"+obj.message);
+    if (obj.message) {
+      throw new Error("Fehler:" + obj.message);
     } else {
       delete obj.res;
       return obj;
@@ -74,31 +74,33 @@ const differ = (obj) => Promise.resolve()
 
 const crawler =
   (obj) => Promise.resolve(obj)
-  .then( ()=>pool.query("select 'http://'||url as url from weburl where id = $1",[obj.id]))
+  .then(() => pool.query("select 'http://'||url as url from weburl where id = $1", [obj.id]))
   .then((res) => {
-    if ( res.rows.length === 1 ){
-      Object.assign(obj,res.rows[0] );
+    if (res.rows.length === 1) {
+      Object.assign(obj, res.rows[0]);
     }
     return obj;
   })
-  .then( (obj)=>pool.query("select count(*) anz,max(ende-start) maxer,min(ende-start) miner from weblog where url = $1 group by url",[obj.url]))
+  .then((obj) => pool.query("select count(*) anz,max(ende-start) maxer,min(ende-start) miner from weblog where url = $1 group by url", [obj.url]))
   .then((res) => {
-    if ( res.rows.length === 1 ){
-      Object.assign(obj,res.rows[0] );
+    if (res.rows.length === 1) {
+      Object.assign(obj, res.rows[0]);
     }
     obj.start = moment.now("X");
     obj.message = null;
 
     return obj;
   })
-.then((obj) =>      superrequest({
-         uri: obj.url
-       }))
-       .then( (res)=>Object.assign(obj,{res}))
-      .catch((err) => Object.assign(obj, {
-      message: err.message
-      }))
-    .then(differ);
+  .then((obj) => superrequest({
+    uri: obj.url
+  }))
+  .then((res) => Object.assign(obj, {
+    res
+  }))
+  .catch((err) => Object.assign(obj, {
+    message: err.message
+  }))
+  .then(differ);
 
 
 //pino.info("vor start %d", webber.length);
@@ -111,7 +113,7 @@ pool.on("error", (error, client) => {
 
 const Controller = require("./controller2.js");
 
-const controller= new Controller({
+const controller = new Controller({
   parallel: 40,
   limit: 30000,
   //limit : 100,
@@ -127,5 +129,5 @@ Promise.resolve()
   })
   .catch((err) => {
     pool.end();
-    pino.error( err[0],"exit with errors: %d",err.length );
+    pino.error(err[0], "exit with errors: %d", err.length);
   });
