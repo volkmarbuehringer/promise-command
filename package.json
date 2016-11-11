@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "eslint": "^3.9.0",
-    "pino": "^2.13.0",
-    "moment": "^2.15.1"
+    "moment": "^2.15.1",
+    "pino": "^2.15.0"
   }
 }
