@@ -52,11 +52,16 @@ const differ = (obj) => Promise.resolve()
       obj.len = null;
     }
 
-    parseString(obj.res, {
+    return new Promise((resolve, reject) => parseString(obj.res, {
       explicitArray: true
     }, (err, result) => {
-      //debug("hier",err,result);
-    });
+      if (err) {
+        //reject(err);
+        resolve();
+      } else {
+        resolve();
+      }
+    }));
     //  debug(obj);
   })
   .then(() => pool.query(`insert into weblog
