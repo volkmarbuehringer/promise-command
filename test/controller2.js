@@ -89,8 +89,7 @@ debug("neue runde",i);
 const first=  yield* this.startAll(res);
 
 let la;
-let i;
-let j;
+
 const that=this;
 const helper=function*(z,i){
   that.started[z]++;
@@ -107,7 +106,7 @@ for (let i=0; i< first.length;i++){
 }
 debug("start wiederhol mit %d %d %d",first.length,zahl0,zahl1);
 
-for(  ;;){
+for(let i=0,j=0;  ;){
     if ( la){
       first.push(la);
       if ( la.group === 0 ){
@@ -126,8 +125,8 @@ for(  ;;){
         }
       }
     } else {
-      for( i=0,j=0; i < first.length;i++,j++){
-        if ( first[i] ){
+      for( ;i < first.length;i++){
+        if ( first[i] && first[i].group === 0){
           yield *helper(0,i);
           break;
     }}
