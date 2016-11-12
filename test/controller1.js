@@ -8,8 +8,7 @@ class Controller1 extends require("../lib/controller.js") {
   constructor(param) {
     super(param);
     this.errprob = 0.0001;
-    this.collector = [];
-
+    this.collector=[];
     setInterval(() => {
       const erg = this.checkRunning(0,2E8);
 
@@ -21,7 +20,7 @@ class Controller1 extends require("../lib/controller.js") {
   }
   errHandler(pos, err) {
     debug("error", err, pos);
-    delete this.daten[pos.pos];
+
     if (this.errcollector.size > 30) {
       return true;
     } else {
@@ -30,12 +29,8 @@ class Controller1 extends require("../lib/controller.js") {
   }
   objHandler(pos, obj) { //add timing
     //debug("hier da",pos,obj);
-    /*
-    this.collector[pos.id] = Object.assign(obj, {
-      diff: process.hrtime(pos.start)
-    }); //store endresult in order of start like Promise.all
-*/
-    this.collector.push(pos.input);
+    this.collector[pos.input.id]=obj;
+
 
   }
   endHandler() {
@@ -51,20 +46,15 @@ class Controller1 extends require("../lib/controller.js") {
 
   *
   dataGenerator(res) {
-    let now = moment.now("X");
+    const first=  yield* this.startAll(res);
+
+    let next=first;
     for (let i = 0; i < 30; i++) {
 
-      if (i > 0) {
-        //  yield* this.waiter(10000 - (moment.now("X") - now));
-        debug("itermediatore", this.collector.length);
-        res = this.collector;
-        this.collector = [];
+          //  yield* this.waiter(10000 - (moment.now("X") - now));
+        debug("itermediatore", next.length);
+        next=  yield* this.startAllNext(next);
 
-      }
-
-      yield* this.startAll(res);
-
-      now = moment.now("X");
     }
 
 

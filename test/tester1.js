@@ -25,7 +25,7 @@ const crawler =
 
 const controller = new Controller1({
   parallel: 80,
-  limit: 3000000,
+  limit: 3000,
   fun: crawler
 });
 
