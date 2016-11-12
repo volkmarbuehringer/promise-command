@@ -28,14 +28,14 @@ class Controller1 extends require("../lib/controller.js") {
       return false;
     }
   }
-  objHandler(pos, obj, input) { //add timing
+  objHandler(pos, obj) { //add timing
     //debug("hier da",pos,obj);
     /*
     this.collector[pos.id] = Object.assign(obj, {
       diff: process.hrtime(pos.start)
     }); //store endresult in order of start like Promise.all
 */
-    this.collector.push(input);
+    this.collector.push(pos.input);
 
   }
   endHandler() {
