@@ -36,7 +36,7 @@ class Controller1 extends require("../lib/controller.js") {
   endHandler() {
     if (this.errcollector.size > 30) { //throw with error
       debug("finished with error %d", this.errcollector.size);
-      this.emit("ende", [...this.errcollector.entries()]);
+      this.emit("ende", [...this.errcollector]);
     } else { // return the array of results
       debug("finished with gen");
       this.emit("ende", null, this.collector);
@@ -49,10 +49,10 @@ class Controller1 extends require("../lib/controller.js") {
     const first=  yield* this.startAll(res);
 
     let next=first;
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; ; i++) {
 
           //  yield* this.waiter(10000 - (moment.now("X") - now));
-        debug("itermediatore", next.length);
+       debug("itermediatore %d %d",i, next.length);
         next=  yield* this.startAllNext(next);
 
     }
