@@ -172,7 +172,7 @@ setInterval(() => {
         }
     });
 
-    debug("longest %d %d %d", erg.length, count, bytes);
+    debug("longest %j %d %d %d", controller.started,erg.length, count, bytes);
 
 }, 1000).unref();
 
