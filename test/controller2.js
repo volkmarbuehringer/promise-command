@@ -86,8 +86,8 @@ debug("neue runde",i);
 */
 
 
-const first=  yield* this.startAll(res);
-
+const first=  yield* this.startAll(this.makeIterator(res));
+/*
 let la;
 
 const that=this;
@@ -133,17 +133,17 @@ for(let i=0,j=0;  ;){
     }
 
 }
+*/
 
-/*
   let next=first;
   for (let i = 0; i < 30; i++) {
 
         //  yield* this.waiter(10000 - (moment.now("X") - now));
       debug("itermediatore %d %d",i, next.length);
-      next=  yield* this.startAllNext(next);
+      next=  yield* this.startAll(this.makeIteratorInp(next));
 
   }
-  */
+
 
     }
 }

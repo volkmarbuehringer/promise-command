@@ -156,7 +156,6 @@ setInterval(() => {
     const erg = controller.checkRunning(5);
     let bytes = 0;
     let count = 0;
-    let adder=0;
     erg.forEach((x) => {
         const url = x.input.url + ":80:";
         const socker = agent.sockets[url];
@@ -164,7 +163,7 @@ setInterval(() => {
             const sock = socker[0];
             count++;
             if (sock.connecting && sock._handle.bytesRead === 0) {
-                adder++;
+                controller.parallel++;
             } else if (sock._hadError) {
                 debug("error");
             } else {
@@ -172,9 +171,7 @@ setInterval(() => {
             }
         }
     });
-    if ( adder > controller.parallel-controller.parallelsave){
-      controller.parallel = controller.parallelsave+adder;
-    }
+
     debug("longest %j %d %d %d", controller.started,erg.length, count, bytes);
 
 }, 1000).unref();

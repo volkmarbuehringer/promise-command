@@ -54,9 +54,9 @@ class Controller1 extends require("../lib/controller.js") {
     let next=first;
     for (let i = 0; ; i++) {
 
-      const r=yield* this.waiter(1000);
-      debug("nach sleep",r.length,next.length);
-      next=next.concat(r);
+      //const r=yield* this.waiter(1000);
+    //  debug("nach sleep",r.length,next.length);
+    //  next=next.concat(r);
           //  yield* this.waiter(10000 - (moment.now("X") - now));
        debug("itermediatore %d %d",i, next.length);
 
