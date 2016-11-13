@@ -18,14 +18,14 @@ const crawler =
   (obj) => Promise.resolve(obj)
   .then((obj) => {
     obj.message = null;
-
+    obj.count=(obj.count||0)+1;
     return obj;
   })
   .then((obj) => controller.tester(obj));
 
 const controller = new Controller1({
   parallel: 80,
-  limit: 100000,
+  limit: 10000,
   fun: crawler
 });
 

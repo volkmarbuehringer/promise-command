@@ -2,15 +2,18 @@
 
 
 const debug = require("debug")("controller1");
-const moment = require("moment");
+//const moment = require("moment");
 
 class Controller1 extends require("../lib/controller.js") {
   constructor(param) {
     super(param);
     this.errprob = 0.0001;
     this.collector=[];
+
+
     setInterval(() => {
-      const erg = this.checkRunning(0,2E8);
+  //    const erg = this.checkRunning(0,2E8);
+  const erg = this.checkRunning(1);
 
       debug("longest %d", erg.length);
       this.parallel += erg.length;
@@ -46,14 +49,18 @@ class Controller1 extends require("../lib/controller.js") {
 
   *
   dataGenerator(res) {
-    const first=  yield* this.startAll(res);
+    const first=  yield* this.startAll(this.makeIterator(res));
 
     let next=first;
     for (let i = 0; ; i++) {
 
+      const r=yield* this.waiter(1000);
+      debug("nach sleep",r.length,next.length);
+      next=next.concat(r);
           //  yield* this.waiter(10000 - (moment.now("X") - now));
        debug("itermediatore %d %d",i, next.length);
-        next=  yield* this.startAllNext(next);
+
+        next=  yield* this.startAll(this.makeIteratorInp(next));
 
     }
 
