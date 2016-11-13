@@ -46,56 +46,35 @@ class Controller2 extends require("promise-command") {
 
     }
 
-    *
-    dataGenerator(res) {
-/*
-      function makeIterator(array,border,dir){
-          let nextIndex = 0;
+    makeIteratorInpG (array,dir){
+       var nextIndex = 0;
 
-          return {
-             next: function(){
-                 for ( ;nextIndex < array.length &&
-                   ( array[nextIndex].diff === null ||
-                     (array[nextIndex].diff[0] <= border && dir === 0)||
-   (array[nextIndex].diff[0]> border && dir === 1))
-                   ;nextIndex++ ){
-                 }
-                 if (nextIndex < array.length){
-                   array[nextIndex].diff=null;
-                   return {value: array[nextIndex], done: false} ;
-                 } else {
-                   return      {done: true};
-                 }
-
-
-
-             }
-          };
-      }
-
-let iterslow = makeIterator(res,6,0);
-        for (let i = 0; i < 30; i++) {
-
-const iterfast = makeIterator(res,999,1);
-
-            yield* this.startAll(iterfast);
-
-debug("neue runde",i);
+       return {
+          next: function(){
+            for (;;){
+            if ( nextIndex < array.length){
+              const value = array[nextIndex++];
+                if ( value && "input" in value &&
+              (dir === value.group ) ){
+                  return { value ,done: false};
+                }
+            } else {
+              return     {done: true};
+            }
 
         }
-*/
+       }
+   };
+  }
+
+    *
+    dataGenerator(res) {
 
 
-const first=  yield* this.startAll(this.makeIterator(res));
-/*
 let la;
 
-const that=this;
-const helper=function*(z,i){
-  that.started[z]++;
-  la = yield* that.startOne(that.fun, first[i].input);
-  delete first[i];
-};
+const first=  yield* this.startAll(this.makeIterator(res));
+
 let zahl0=0,zahl1=0;
 for (let i=0; i< first.length;i++){
   if ( first[i] && first[i].group === 0){
@@ -106,35 +85,37 @@ for (let i=0; i< first.length;i++){
 }
 debug("start wiederhol mit %d %d %d",first.length,zahl0,zahl1);
 
-for(let i=0,j=0;  ;){
-    if ( la){
-      first.push(la);
-      if ( la.group === 0 ){
-        for( ; i < first.length;i++){
-          if ( first[i] && first[i].group === 0){
-            yield *helper(0,i);
-            break;
-          }
-        }
-      } else {
-        for( ; j < first.length;j++){
-          if ( first[j] && first[j].group === 1){
-          yield *helper(1,j);
-            break;
-          }
-        }
+let iter =  [   this.makeIteratorInpG(first,0),     this.makeIteratorInpG(first,1)];
+
+for(;  ;){
+    if ( !la){
+      la ={group: 0};
+    }else {
+          first.push(la);
       }
-    } else {
-      for( ;i < first.length;i++){
-        if ( first[i] && first[i].group === 0){
-          yield *helper(0,i);
+
+      for ( let i=0;i< 2;i++){
+      const next = iter[la.group||0].next();
+//debug("ne",next,la);
+        if ( next.done){
+         if (la.group ){
+           la ={group: 0};
+         } else {
+           la ={group: 1};
+         }
+
+        } else{
+              this.started[la.group||0]++;
+              la = yield* this.startOne(this.fun, next.value.input);
+              delete next.value.input;
           break;
-    }}
+        }
+
+      }
     }
 
-}
-*/
 
+/*
   let next=first;
   for (let i = 0; i < 30; i++) {
 
@@ -143,7 +124,7 @@ for(let i=0,j=0;  ;){
       next=  yield* this.startAll(this.makeIteratorInp(next));
 
   }
-
+*/
 
     }
 }
