@@ -127,9 +127,13 @@ for(;  ;){
       
       next=  yield* this.startAll(this.makeIteratorInp(next));
 
-        if (  next < 20 ){
+         if (  next < 20 ){
+          do{
           const r=yield* this.waiter(20000 );
+          debug("warten",i, r.length);
+
           next=next.concat(r);
+        }while ( next.length === 0);
         }
 
   }
