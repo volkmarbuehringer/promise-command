@@ -123,7 +123,14 @@ for(;  ;){
 
         //  yield* this.waiter(10000 - (moment.now("X") - now));
       debug("itermediatore %d %d",i, next.length);
+      
+      
       next=  yield* this.startAll(this.makeIteratorInp(next));
+
+        if (  next < 20 ){
+          const r=yield* this.waiter(20000 );
+          next=next.concat(r);
+        }
 
   }
 */
