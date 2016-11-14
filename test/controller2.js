@@ -54,8 +54,8 @@ class Controller2 extends require("promise-command") {
             for (;;){
             if ( nextIndex < array.length){
               const value = array[nextIndex++];
-                if ( value && "input" in value &&
-              (dir === value.group ) ){
+                if ( value && "input" in value &&  dir === value.group  ){
+                delete array[nextIndex++];
                   return { value ,done: false};
                 }
             } else {
@@ -93,6 +93,9 @@ for(;  ;){
     }else {
           first.push(la);
       }
+      if ( this.open.size >= this.parallel  ){
+         la = yield Promise.resolve();
+      }  else {
 
       for ( let i=0;i< 2;i++){
       const next = iter[la.group||0].next();
@@ -107,10 +110,9 @@ for(;  ;){
         } else{
               this.started[la.group||0]++;
               la = yield* this.startOne(this.fun, next.value.input);
-              delete next.value.input;
           break;
         }
-
+}
       }
     }
 
