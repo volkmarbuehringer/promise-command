@@ -10,7 +10,7 @@ class Controller1 extends require("../lib/controller.js") {
     this.errprob = 0.0001;
     this.collector=[];
 
-
+/*
     setInterval(() => {
   //    const erg = this.checkRunning(0,2E8);
   const erg = this.checkRunning(1);
@@ -19,7 +19,7 @@ class Controller1 extends require("../lib/controller.js") {
       this.parallel += erg.length;
 
     }, 1000).unref();
-
+*/
   }
   errHandler(pos, err) {
     debug("error", err, pos);
@@ -54,21 +54,13 @@ class Controller1 extends require("../lib/controller.js") {
 
     const first = yield* this.startAll([],()=>iter1.next());
     const iter2 = this.makeIteratorInp(first);
-    const next= yield* this.startAll(first,()=>iter2.next());
+    const next= yield* this.startAll(first,()=>iter2.next(),10000);
 
-/*
-    for (let i = 0; ; i++) {
+    debug("am ende",next.length);
 
-      //const r=yield* this.waiter(1000);
-    //  debug("nach sleep",r.length,next.length);
-    //  next=next.concat(r);
-          //  yield* this.waiter(10000 - (moment.now("X") - now));
-       debug("itermediatore %d %d",i, next.length);
+    const r = yield* this.waiterFinished(500000);
 
-        next=  yield* this.startAll(this.makeIteratorInp(next));
-
-    }
-*/
+    debug("ganz am ende",r.length);
   return next;
   }
 }
