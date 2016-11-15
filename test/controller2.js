@@ -61,8 +61,8 @@ class Controller2 extends require("promise-command") {
             next: function() {
                 for (;;) {
                     if (nextIndex < array.length) {
-                        const value = array[nextIndex++];
-//                                  delete array[nextIndex++];
+                        const value = array[nextIndex];
+                            delete array[nextIndex++];
                         if (value && "input" in value && dir === value.group) {
 
                             return {
@@ -86,9 +86,9 @@ class Controller2 extends require("promise-command") {
     dataGenerator(res) {
 
 
-        let la;
+        const iter1 = this.makeIterator(res);
 
-        const first = yield* this.startAll(this.makeIterator(res));
+        const first = yield* this.startAll([],()=>iter1.next());
 
         let zahl0 = 0,
             zahl1 = 0;
@@ -103,49 +103,30 @@ class Controller2 extends require("promise-command") {
 
         let iter = [this.makeIteratorInpG(first, 0), this.makeIteratorInpG(first, 1)];
 
-        for (;;) {
-            if (!la) {
-                la = {
-                    group: 0
-                };
-            } else {
-                first.push(la);
-            }
-            if (this.open.size >= this.parallel) {
-                la = yield Promise.resolve();
-            } else {
+const next = yield* this.startAll(first,(la)=>{
+  let next;
+  for (let i = 0; i < 2; i++) {
+    next = iter[la.group || 0].next();
+                     if (!next.done){
+                       return next;
+                     } else {
+                       if (la.group) {
+                           la = {
+                               group: 0
+                           };
+                       } else {
+                           la = {
+                               group: 1
+                           };
+                       }
 
-                let flag = false;
-                for (let i = 0; i < 2; i++) {
 
-                    const next = iter[la.group || 0].next();
+                     }
+}
+return next;
+});
 
-                    if (next.done) {
-                        debug("ne", next, la);
-                        if (la.group) {
-                            la = {
-                                group: 0
-                            };
-                        } else {
-                            la = {
-                                group: 1
-                            };
-                        }
-
-                    } else {
-                        this.started[la.group || 0]++;
-                        la = yield* this.startOne(this.fun, next.value.input);
-                        flag = true;
-                        break;
-                    }
-                }
-                if (flag === false) {
-                    debug("ende iter");
-                    break;
-                }
-            }
-        }
-
+return next;
 
         /*
           let next=first;

@@ -49,9 +49,14 @@ class Controller1 extends require("../lib/controller.js") {
 
   *
   dataGenerator(res) {
-    const first=  yield* this.startAll(this.makeIterator(res));
 
-    let next=first;
+    const iter1 = this.makeIterator(res);
+
+    const first = yield* this.startAll([],()=>iter1.next());
+    const iter2 = this.makeIteratorInp(first);
+    const next= yield* this.startAll(first,()=>iter2.next());
+
+/*
     for (let i = 0; ; i++) {
 
       //const r=yield* this.waiter(1000);
@@ -63,8 +68,8 @@ class Controller1 extends require("../lib/controller.js") {
         next=  yield* this.startAll(this.makeIteratorInp(next));
 
     }
-
-
+*/
+  return next;
   }
 }
 
