@@ -2,16 +2,18 @@
 
 
 const debug = require("debug")("controller1");
-const moment = require("moment");
+//const moment = require("moment");
 
 class Controller1 extends require("../lib/controller.js") {
   constructor(param) {
     super(param);
     this.errprob = 0.0001;
-    this.collector = [];
+    this.collector=[];
+
 
     setInterval(() => {
-      const erg = this.checkRunning(0,2E8);
+  //    const erg = this.checkRunning(0,2E8);
+  const erg = this.checkRunning(1);
 
       debug("longest %d", erg.length);
       this.parallel += erg.length;
@@ -21,27 +23,23 @@ class Controller1 extends require("../lib/controller.js") {
   }
   errHandler(pos, err) {
     debug("error", err, pos);
-    delete this.daten[pos.pos];
+
     if (this.errcollector.size > 30) {
       return true;
     } else {
       return false;
     }
   }
-  objHandler(pos, obj, input) { //add timing
+  objHandler(pos, obj) { //add timing
     //debug("hier da",pos,obj);
-    /*
-    this.collector[pos.id] = Object.assign(obj, {
-      diff: process.hrtime(pos.start)
-    }); //store endresult in order of start like Promise.all
-*/
-    this.collector.push(input);
+    this.collector[pos.input.id]=obj;
+
 
   }
   endHandler() {
     if (this.errcollector.size > 30) { //throw with error
       debug("finished with error %d", this.errcollector.size);
-      this.emit("ende", [...this.errcollector.entries()]);
+      this.emit("ende", [...this.errcollector]);
     } else { // return the array of results
       debug("finished with gen");
       this.emit("ende", null, this.collector);
@@ -51,23 +49,27 @@ class Controller1 extends require("../lib/controller.js") {
 
   *
   dataGenerator(res) {
-    let now = moment.now("X");
-    for (let i = 0; i < 30; i++) {
 
-      if (i > 0) {
-        //  yield* this.waiter(10000 - (moment.now("X") - now));
-        debug("itermediatore", this.collector.length);
-        res = this.collector;
-        this.collector = [];
+    const iter1 = this.makeIterator(res);
 
-      }
+    const first = yield* this.startAll([],()=>iter1.next());
+    const iter2 = this.makeIteratorInp(first);
+    const next= yield* this.startAll(first,()=>iter2.next());
 
-      yield* this.startAll(res);
+/*
+    for (let i = 0; ; i++) {
 
-      now = moment.now("X");
+      //const r=yield* this.waiter(1000);
+    //  debug("nach sleep",r.length,next.length);
+    //  next=next.concat(r);
+          //  yield* this.waiter(10000 - (moment.now("X") - now));
+       debug("itermediatore %d %d",i, next.length);
+
+        next=  yield* this.startAll(this.makeIteratorInp(next));
+
     }
-
-
+*/
+  return next;
   }
 }
 
