@@ -61,8 +61,8 @@ class Controller2 extends require("promise-command") {
             next: function() {
                 for (;;) {
                     if (nextIndex < array.length) {
-                        const value = array[nextIndex];
-                            delete array[nextIndex++];
+                        const value = array[nextIndex++];
+                          //  delete array[nextIndex++];
                         if (value && "input" in value && dir === value.group) {
 
                             return {
@@ -105,6 +105,9 @@ class Controller2 extends require("promise-command") {
 
 const next = yield* this.startAll(first,(la)=>{
   let next;
+  if ( !la){
+    la = {};
+  }
   for (let i = 0; i < 2; i++) {
     next = iter[la.group || 0].next();
                      if (!next.done){
