@@ -54,33 +54,6 @@ class Controller2 extends require("promise-command") {
 
     }
 
-    makeIteratorInpG(array, dir) {
-        let nextIndex = 0;
-
-        return {
-            next: function() {
-                for (;;) {
-                    if (nextIndex < array.length) {
-                        const value = array[nextIndex++];
-                          //  delete array[nextIndex++];
-                        if (value && "input" in value && dir === value.group) {
-
-                            return {
-                                value,
-                                done: false
-                            };
-                        }
-                    } else {
-                        debug("ende iter", dir, nextIndex);
-                        return {
-                            done: true
-                        };
-                    }
-
-                }
-            }
-        };
-    }
 
     *
     dataGenerator(res) {
