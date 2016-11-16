@@ -147,7 +147,6 @@ const Controller = require("./controller2.js");
 
 const controller = new Controller({
     parallel: 40,
-    limit: 30000,
     //limit : 100,
     fun: crawler
 });
