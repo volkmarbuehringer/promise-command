@@ -4,6 +4,8 @@
 const debug = require("debug")("controller1");
 //const moment = require("moment");
 
+const co=(a)=>a?a.diff[0]*1e9+a.diff[1]:0;
+
 class Controller1 extends require("../lib/controller.js") {
   constructor(param) {
     super(param);
@@ -25,7 +27,7 @@ class Controller1 extends require("../lib/controller.js") {
   errHandler(pos, err) {
     debug("error", err, pos);
 
-    if (pos.diff[0] > 0) {
+    if (co(pos) > 1.63e9) {
         Object.assign(pos, {
             group: 1
         });
@@ -44,11 +46,10 @@ class Controller1 extends require("../lib/controller.js") {
   objHandler(pos, obj) { //add timing
     //debug("hier da",pos,obj);
 
-    if (pos.diff[0] > 0) {
+    if (co(pos) > 1.63e9) {
         Object.assign(pos, {
             group: 1
         });
-
     } else {
         Object.assign(pos, {
             group: 0
@@ -74,7 +75,7 @@ class Controller1 extends require("../lib/controller.js") {
 
     const iter1 = this.makeIterator(res);
 
-    const first = yield* this.startAll([],()=>iter1.next());
+    let first = yield* this.startAll([],()=>iter1.next());
 
 /*
     const iter2 = this.makeIteratorInp(first);
@@ -86,13 +87,28 @@ class Controller1 extends require("../lib/controller.js") {
 
     debug("ganz am ende",r.length);
 */
+  const r= yield *this.waiter(3000);
+
+
+  first.push(...r);
+
+
+const x = Math.floor(first.length/2);
+
+debug("vor sort %d",first.length );
+
+    first.sort((a,b)=>co(a)-co(b));
+    debug("median %d %j min %j max %j",x,first[x],first[0],first[first.length-2]);
+
 
 let zahl0 = 0,
     zahl1 = 0;
 for (let i = 0; i < first.length; i++) {
-    if (first[i] && first[i].group === 0) {
+    if (first[i] && i<= x ) {
+      first[i].group = 0;
         zahl0++;
-    } else if (first[i] && first[i].group === 1) {
+    } else if (first[i] && i >x ) {
+       first[i].group = 1;
         zahl1++;
     }
 }
