@@ -162,7 +162,7 @@ setInterval(() => {
             const sock = socker[0];
             count++;
             if (sock.connecting && sock._handle.bytesRead === 0) {
-                controller.parallel++;
+//                controller.parallel++;
             } else if (sock._hadError) {
                 debug("error");
             } else {
