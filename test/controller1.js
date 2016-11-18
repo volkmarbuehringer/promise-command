@@ -4,8 +4,6 @@
 const debug = require("debug")("controller1");
 //const moment = require("moment");
 
-const co=(a)=>a?a.diff[0]*1e9+a.diff[1]:0;
-
 class Controller1 extends require("../lib/controller.js") {
   constructor(param) {
     super(param);
@@ -68,7 +66,7 @@ try {
 
     debug("ganz am ende",r.length);
 */
-  const r= yield *this.waiter(3000);
+  const r= yield *this.waiterFinished(300000,true);
 
 
   first.push(...r);
@@ -76,12 +74,10 @@ try {
 
 const x = Math.floor(first.length/2);
 
-debug("vor sort %d",first.length );
+const co = (a) => a ? a.diff[0] * 1e9 + a.diff[1] : 0;
 
     first.sort((a,b)=>co(a)-co(b));
-    debug("median %d %j min %j max %j",x,first[x],first[0],first[first.length-2]);
-
-    const co = (a) => a ? a.diff[0] * 1e9 + a.diff[1] : 0;
+    debug("open %d median %d %j min %j max %j",this.open.size,x,first[x],first[0],first[first.length-2]);
 
     const median = first[x];
     const testFun1 = (a) => this.timeCompare(a.diff, 0, co(median));
@@ -108,7 +104,13 @@ debug("vor sort %d",first.length );
         }
       }
       return next;
-    });
+    },20000);
+
+    debug("warte auf ende");
+    this.setEndFlag();
+    const l=yield *this.waiterFinished(300000,true);
+    debug("ende hier %d",l.length);
+
     return next;
 }catch(err){
   debug("error generator",err);

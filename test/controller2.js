@@ -43,11 +43,9 @@ try {
 
     const first = yield* this.startAll([], () => iter1.next());
 
-    const r = yield* this.waiter(10000);
+    const r = yield* this.waiterFinished(1000000,true);
     first.push(...r);
     const x = Math.floor(first.length / 2);
-
-    debug("vor sort %d", first.length);
 
     const co = (a) => a ? a.diff[0] * 1e9 + a.diff[1] : 0;
 
@@ -79,6 +77,11 @@ try {
       }
       return next;
     });
+
+    debug("warte auf ende");
+    this.setEndFlag();
+    const l=yield *this.waiterFinished(300000,true);
+    debug("ende hier %d",l.length);
 
     return next;
 
