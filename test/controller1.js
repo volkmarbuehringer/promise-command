@@ -91,7 +91,7 @@ const co = (a) => a ? a.diff[0] * 1e9 + a.diff[1] : 0;
       let next;
       for (let i = 0; i < 2; i++) {
         next = iter[group].next();
-    //        debug("hier",next,la,group);
+          //  debug("hier",next,la,group);
         if (!next.done) {
           this.started[group]++;
           return next;
@@ -102,7 +102,7 @@ const co = (a) => a ? a.diff[0] * 1e9 + a.diff[1] : 0;
       return next;
     };
         const next = yield* this.startAll(first, modder,30000);
-        
+
     debug("warte auf ende");
     this.setEndFlag();
     const l=yield *this.waiterFinished(300000,true);
