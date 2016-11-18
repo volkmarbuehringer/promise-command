@@ -80,22 +80,18 @@ const co = (a) => a ? a.diff[0] * 1e9 + a.diff[1] : 0;
     debug("open %d median %d %j min %j max %j",this.open.size,x,first[x],first[0],first[first.length-2]);
 
     const median = first[x];
-    const testFun1 = (a) => this.timeCompare(a.diff, 0, co(median));
-    const testFun2 = (a) => !this.timeCompare(a.diff, 0, co(median));
+    const testFun1 = (a) => a?this.timeCompare(a.diff, 0, co(median)):true;
+    const testFun2 = (a) => !testFun1(a);
 
     let iter = [this.makeIteratorFun(first, testFun1), this.makeIteratorFun(first, testFun2)];
 
-    const next = yield* this.startAll(first, (la) => {
-      let group;
-      if (!la) {
-        group = 0;
-      } else {
-        group=testFun1(la)?0:1;
-      }
+    const modder =(la) => {
+      let group=testFun1(la)?0:1;
+
       let next;
       for (let i = 0; i < 2; i++) {
         next = iter[group].next();
-//        debug("hier",next,la,group);
+    //        debug("hier",next,la,group);
         if (!next.done) {
           this.started[group]++;
           return next;
@@ -104,8 +100,9 @@ const co = (a) => a ? a.diff[0] * 1e9 + a.diff[1] : 0;
         }
       }
       return next;
-    },20000);
-
+    };
+        const next = yield* this.startAll(first, modder,30000);
+        
     debug("warte auf ende");
     this.setEndFlag();
     const l=yield *this.waiterFinished(300000,true);
