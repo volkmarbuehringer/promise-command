@@ -27,16 +27,6 @@ class Controller1 extends require("../lib/controller.js") {
   errHandler(pos, err) {
     debug("error", err, pos);
 
-    if (co(pos) > 1.63e9) {
-        Object.assign(pos, {
-            group: 1
-        });
-    } else {
-        Object.assign(pos, {
-            group: 0
-        });
-    }
-
     if (this.errcollector.size > 30) {
       return true;
     } else {
@@ -45,16 +35,6 @@ class Controller1 extends require("../lib/controller.js") {
   }
   objHandler(pos, obj) { //add timing
     //debug("hier da",pos,obj);
-
-    if (co(pos) > 1.63e9) {
-        Object.assign(pos, {
-            group: 1
-        });
-    } else {
-        Object.assign(pos, {
-            group: 0
-        });
-    }
 
     this.collector[pos.input.id]=obj;
 
@@ -73,7 +53,8 @@ class Controller1 extends require("../lib/controller.js") {
   *
   dataGenerator(res) {
 
-    const iter1 = this.makeIterator(res);
+try {
+    const iter1 = this.makeIteratorFun(res,null);
 
     let first = yield* this.startAll([],()=>iter1.next());
 
@@ -100,50 +81,38 @@ debug("vor sort %d",first.length );
     first.sort((a,b)=>co(a)-co(b));
     debug("median %d %j min %j max %j",x,first[x],first[0],first[first.length-2]);
 
+    const co = (a) => a ? a.diff[0] * 1e9 + a.diff[1] : 0;
 
-let zahl0 = 0,
-    zahl1 = 0;
-for (let i = 0; i < first.length; i++) {
-    if (first[i] && i<= x ) {
-      first[i].group = 0;
-        zahl0++;
-    } else if (first[i] && i >x ) {
-       first[i].group = 1;
-        zahl1++;
-    }
+    const median = first[x];
+    const testFun1 = (a) => this.timeCompare(a.diff, 0, co(median));
+    const testFun2 = (a) => !this.timeCompare(a.diff, 0, co(median));
+
+    let iter = [this.makeIteratorFun(first, testFun1), this.makeIteratorFun(first, testFun2)];
+
+    const next = yield* this.startAll(first, (la) => {
+      let group;
+      if (!la) {
+        group = 0;
+      } else {
+        group=testFun1(la)?0:1;
+      }
+      let next;
+      for (let i = 0; i < 2; i++) {
+        next = iter[group].next();
+//        debug("hier",next,la,group);
+        if (!next.done) {
+          this.started[group]++;
+          return next;
+        } else {
+          group=group?0:1;
+        }
+      }
+      return next;
+    });
+    return next;
+}catch(err){
+  debug("error generator",err);
 }
-debug("start wiederhol mit %d %d %d", first.length, zahl0, zahl1);
-
-let iter = [this.makeIteratorInpG(first, 0), this.makeIteratorInpG(first, 1)];
-
-const next = yield* this.startAll(first,(la)=>{
-let next;
-if ( !la){
-la = {};
-}
-for (let i = 0; i < 2; i++) {
-next = iter[la.group || 0].next();
-             if (!next.done){
-               this.started[la.group || 0]++;
-               return next;
-             } else {
-               if (la.group) {
-                   la = {
-                       group: 0
-                   };
-               } else {
-                   la = {
-                       group: 1
-                   };
-               }
-
-
-             }
-}
-
-
-  return next;
-});
 
 
 }

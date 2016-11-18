@@ -38,8 +38,8 @@ class Controller2 extends require("promise-command") {
   *
   dataGenerator(res) {
 
-
-    const iter1 = this.makeIterator(res);
+try {
+    const iter1 = this.makeIteratorFun(res,null);
 
     const first = yield* this.startAll([], () => iter1.next());
 
@@ -81,6 +81,10 @@ class Controller2 extends require("promise-command") {
     });
 
     return next;
+
+  }catch(err){
+    debug("error generator",err);
+  }
 
     /*
       let next=first;
