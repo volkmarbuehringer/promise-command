@@ -2,7 +2,6 @@
 
 
 const debug = require("debug")("controller1");
-const co=(a)=>a?a.diff[0]*1e9+a.diff[1]:0;
 
 class Controller2 extends require("promise-command") {
     constructor(param) {
@@ -11,15 +10,6 @@ class Controller2 extends require("promise-command") {
     }
     errHandler(pos, err) {
         //            debug("error",err,pos);
-        if (co(pos) > 2.27e9) {
-            Object.assign(pos, {
-                group: 1
-            });
-        } else {
-            Object.assign(pos, {
-                group: 0
-            });
-        }
         if (this.errcollector.size > 300) {
             return true;
         } else {
@@ -32,15 +22,6 @@ class Controller2 extends require("promise-command") {
         /*
     ; //store endresult in order of start like Promise.all
 */
-if (co(pos) > 2.27e9) {
-    Object.assign(pos, {
-        group: 1
-    });
-} else {
-    Object.assign(pos, {
-        group: 0
-    });
-}
     }
     endHandler() {
         if (this.errcollector.size > 300) { //throw with error
@@ -68,48 +49,37 @@ if (co(pos) > 2.27e9) {
 
       debug("vor sort %d",first.length );
 
+      const co=(a)=>a?a.diff[0]*1e9+a.diff[1]:0;
+
           first.sort((a,b)=>co(a)-co(b));
           debug("median %d %j min %j max %j",x,first[x],first[0],first[first.length-2]);
+const testFun1=(a)=>this.timeCompare(a.diff,0,first[x]);
+const testFun2=(a)=>!this.timeCompare(a.diff,0,first[x]);
 
-
-      let zahl0 = 0,
-          zahl1 = 0;
-      for (let i = 0; i < first.length; i++) {
-          if (first[i] && i<= x ) {
-            first[i].group = 0;
-              zahl0++;
-          } else if (first[i] && i >x ) {
-             first[i].group = 1;
-              zahl1++;
-          }
-      }
-
-        debug("start wiederhol mit %d %d %d", first.length, zahl0, zahl1);
-
-        let iter = [this.makeIteratorInpG(first, 0), this.makeIteratorInpG(first, 1)];
+        let iter = [this.makeIteratorFun(first,testFun1 ), this.makeIteratorFun(first, testFun2)];
 
 const next = yield* this.startAll(first,(la)=>{
-  let next;
   if ( !la){
     la = {};
   }
+  let group;
+  if ( testFun1(la)){
+    group = 0;
+  } else  {
+    group = 1;
+  }
+  let next;
   for (let i = 0; i < 2; i++) {
-    next = iter[la.group || 0].next();
+    next = iter[group].next();
                      if (!next.done){
-                              this.started[la.group || 0]++;
+                              this.started[group]++;
                        return next;
                      } else {
-                       if (la.group) {
-                           la = {
-                               group: 0
-                           };
+                       if (group) {
+                               group=0;
                        } else {
-                           la = {
-                               group: 1
-                           };
+                               group=1;
                        }
-
-
                      }
 }
 return next;
