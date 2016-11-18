@@ -1,6 +1,6 @@
 {
   "name": "promise-command",
-  "version": "4.5.1",
+  "version": "4.5.2",
   "description": "parallel execution of ES6 Promises without Promise.all",
   "main": "index.js",
   "scripts": {
