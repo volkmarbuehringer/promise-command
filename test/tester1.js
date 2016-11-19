@@ -21,11 +21,20 @@ const crawler =
     obj.count=(obj.count||0)+1;
     return obj;
   })
-  .then((obj) => controller.tester(obj));
+  .then((obj) => controller.tester(obj,2100));
+
+  const crawler1 =
+    (obj) => Promise.resolve(obj)
+    .then((obj) => {
+      obj.message = null;
+      obj.count=(obj.count||0)+1;
+      return obj;
+    })
+    .then((obj) => controller.tester(obj,5700));
 
 const controller = new Controller1({
   parallel: 80,
-  fun: crawler
+  fun: [crawler,crawler1]
 });
 
 

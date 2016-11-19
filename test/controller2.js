@@ -38,51 +38,51 @@ class Controller2 extends require("promise-command") {
   *
   dataGenerator(res) {
 
-try {
-    const iter1 = this.makeIteratorFun(res,null);
+    try {
+      const iter1 = this.makeIteratorFun(res, null);
 
-    const first = yield* this.startAll([], () => iter1.next());
+      const first = yield* this.startAll([], () => iter1.next());
 
-    const r = yield* this.waiterFinished(1000000,true);
-    first.push(...r);
-    const x = Math.floor(first.length / 2);
+      const r = yield* this.waiterFinished(1000000, true);
+      first.push(...r);
+      const x = Math.floor(first.length / 2);
 
-    const co = (a) => a ? a.diff[0] * 1e9 + a.diff[1] : 0;
+      const co = (a) => a ? a.diff[0] * 1e9 + a.diff[1] : 0;
 
-    first.sort((a, b) => co(a) - co(b));
-    const median = first[x];
-    debug("median %d %j min %j max %j", x, median, first[0], first[first.length - 2]);
-    const testFun1 = (a) => a?this.timeCompare(a.diff, 0, co(median)):true;
-    const testFun2 = (a) => !testFun1(a);
+      first.sort((a, b) => co(a) - co(b));
+      const median = first[x];
+      debug("median %d %j min %j max %j", x, median, first[0], first[first.length - 2]);
+      const testFun1 = (a) => a ? this.timeCompare(a.diff, 0, co(median)) : true;
+      const testFun2 = (a) => !testFun1(a);
 
-    let iter = [this.makeIteratorFun(first, testFun1), this.makeIteratorFun(first, testFun2)];
-const modder =(la) => {
-  let group=testFun1(la)?0:1;
+      let iter = [this.makeIteratorFun(first, testFun1), this.makeIteratorFun(first, testFun2)];
+      const modder = (la) => {
+        let group = testFun1(la) ? 0 : 1;
 
-  let next;
-  for (let i = 0; i < 2; i++) {
-    next = iter[group].next();
-//        debug("hier",next,la,group);
-    if (!next.done) {
-      this.started[group]++;
+        let next;
+        for (let i = 0; i < 2; i++) {
+          next = iter[group].next();
+          //        debug("hier",next,la,group);
+          if (!next.done) {
+            this.started[group]++;
+            return next;
+          } else {
+            group = group ? 0 : 1;
+          }
+        }
+        return next;
+      };
+      const next = yield* this.startAll(first, modder, 3000);
+
+      debug("warte auf ende");
+      const l = yield* this.waiterFinished(300000, true);
+      debug("ende hier %d", l.length);
+
       return next;
-    } else {
-      group=group?0:1;
+
+    } catch (err) {
+      debug("error generator", err);
     }
-  }
-  return next;
-};
-    const next = yield* this.startAll(first, modder,3000);
-
-    debug("warte auf ende");
-    const l=yield *this.waiterFinished(300000,true);
-    debug("ende hier %d",l.length);
-
-    return next;
-
-  }catch(err){
-    debug("error generator",err);
-  }
 
     /*
       let next=first;
