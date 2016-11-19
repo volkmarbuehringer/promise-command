@@ -75,7 +75,6 @@ const modder =(la) => {
     const next = yield* this.startAll(first, modder,3000);
 
     debug("warte auf ende");
-    this.setEndFlag();
     const l=yield *this.waiterFinished(300000,true);
     debug("ende hier %d",l.length);
 
