@@ -1,6 +1,5 @@
 "use strict";
 
-
 const pino = require("pino")();
 const Controller1 = require("./controller1.js");
 
@@ -18,7 +17,6 @@ const crawler =
   (obj) => Promise.resolve(obj)
   .then((obj) => {
     obj.message = null;
-    obj.count=(obj.count||0)+1;
     return obj;
   })
   .then((obj) => controller.tester(obj,2100));
@@ -27,8 +25,7 @@ const crawler =
     (obj) => Promise.resolve(obj)
     .then((obj) => {
       obj.message = null;
-      obj.count=(obj.count||0)+1;
-      return obj;
+        return obj;
     })
     .then((obj) => controller.tester(obj,5700));
 
