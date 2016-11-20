@@ -46,7 +46,6 @@ const differ = (obj) => Promise.resolve()
   .then(() => {
 
     obj.ende = moment.now("X");
-    obj.diff = obj.ende - obj.start;
     if (obj.res) {
       obj.len = obj.res.length;
     } else {
@@ -88,10 +87,7 @@ const crawler =
     return obj;
   })
   .then((obj) => pool.query("select count(*) anz,max(ende-start) maxer,min(ende-start) miner from weblog where url = $1 group by url", [obj.url]))
-  .then((res) => {
-    if (res.rows.length === 1) {
-      Object.assign(obj, res.rows[0]);
-    }
+  .then(() => {
     obj.start = moment.now("X");
     obj.message = null;
 
