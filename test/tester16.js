@@ -127,7 +127,7 @@ const controller = new Controller({
 
 
 
-const inter2=setInterval(controller.checkAgent(agent), 1000).unref();
+const inter2=setInterval(controller.checkAgent(agent).bind(controller), 1000).unref();
 
 
 
