@@ -75,7 +75,7 @@ class Controller2 extends require("promise-command") {
       const next = yield* this.startAll(first, modder, 3000);
 
       debug("warte auf ende");
-      const l = yield* this.waiterFinished(300000, true);
+      const l = yield* this.waiterFinished(30000, true);
       debug("ende hier %d", l.length);
 
       return next;
@@ -84,29 +84,33 @@ class Controller2 extends require("promise-command") {
       debug("error generator", err);
     }
 
-    /*
-      let next=first;
-      for (let i = 0; i < 30; i++) {
-
-            //  yield* this.waiter(10000 - (moment.now("X") - now));
-          debug("itermediatore %d %d",i, next.length);
-
-
-          next=  yield* this.startAll(this.makeIteratorInp(next));
-
-             if (  next < 20 ){
-              do{
-              const r=yield* this.waiter(20000 );
-              debug("warten",i, r.length);
-
-              next=next.concat(r);
-            }while ( next.length === 0);
-            }
-
-      }
-    */
 
   }
+
+  checkAgent(agent){
+    return function (){
+  const erg = this.checkRunning(15);
+  let bytes = 0;
+  let count = 0;
+  erg.forEach((x) => {
+    const url = x.input.url + ":80:";
+    const socker = agent.sockets[url];
+    if (socker && Array.isArray(socker) && socker.length === 1) {
+      const sock = socker[0];
+      count++;
+      if (sock.connecting && sock._handle.bytesRead === 0) {
+                      this.parallel++;
+      } else if (sock._hadError) {
+        debug("error");
+      } else {
+        bytes += sock._handle.bytesRead;
+      }
+    }
+  });
+  debug("longest %j %d %d %d", this.started, erg.length, count, bytes);
+
+};
+}
 }
 
 module.exports = Controller2;

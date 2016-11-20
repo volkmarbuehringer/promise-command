@@ -16,7 +16,7 @@ const pool = new Pool({
 });
 
 
-setInterval(() => pino.info(controller.statistik(), "sockets: "), 5000).unref();
+const inter1=setInterval(() => pino.info(controller.statistik(), "sockets: "), 5000).unref();
 
 process.on("unhandledRejection", (reason, p) => {
   pino.error(reason, "Unhandled Rejection at: Promise");
@@ -30,32 +30,6 @@ const agent = new http.Agent({
 });
 
 
-/*
-const ccc=()=>{
-let connecting=0;
-let bytes=0;
-let error=0;
-let consuming=0;
-const la =   Object.values(agent.sockets);
- la.forEach((x)=>{
-  if (x[0].connecting ){
-    connecting++;
-  }
-  if (x[0]._consuming ){
-    consuming++;
-  }
-if ( x[0]._hadError){
-  error++;
-}
-  if( x[0]._bytesDispatched) {
-    bytes+=x[0]._bytesDispatched;
-  }
-});
-debug("connect %d consum %d gesamt %d bytes %d error %d",connecting,consuming,la.length,bytes,error);
- }
- ;
- setInterval(() => debug(ccc()), 5000).unref();
-*/
 
 const superrequest = request.defaults({
   agent,
@@ -151,39 +125,25 @@ const controller = new Controller({
   fun: crawler
 });
 
-setInterval(() => {
-  const erg = controller.checkRunning(5);
-  let bytes = 0;
-  let count = 0;
-  erg.forEach((x) => {
-    const url = x.input.url + ":80:";
-    const socker = agent.sockets[url];
-    if (socker && Array.isArray(socker) && socker.length === 1) {
-      const sock = socker[0];
-      count++;
-      if (sock.connecting && sock._handle.bytesRead === 0) {
-        //                controller.parallel++;
-      } else if (sock._hadError) {
-        debug("error");
-      } else {
-        bytes += sock._handle.bytesRead;
-      }
-    }
-  });
 
-  debug("longest %j %d %d %d", controller.started, erg.length, count, bytes);
 
-}, 1000).unref();
+const inter2=setInterval(controller.checkAgent(agent), 1000).unref();
+
+
 
 
 Promise.resolve()
   .then(() => pool.query("select id from weburl order by id"))
   .then((res) => controller.runner(res.rows))
   .then((x) => {
+    clearInterval(inter1);
+    clearInterval(inter2);
     pino.info(x, "finished");
     pool.end();
   })
   .catch((err) => {
+    clearInterval(inter1);
+    clearInterval(inter2);
     pool.end();
     pino.error(err[0], "exit with errors: %d", err.length);
   });
