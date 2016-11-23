@@ -1,5 +1,6 @@
 "use strict";
 
+const VError=require("verror");
 const request = require("request-promise-native");
 const express = require("express");
 const pino = require("express-pino-logger")();
@@ -74,7 +75,7 @@ const differ = (obj) => Promise.resolve()
           values($1,$2,$3,$4,$5,$6 )`, [obj.start, obj.ende, obj.url, obj.message || "", obj.len, obj.res || ""]))
   .then(() => {
     if (obj.message) {
-      throw new Error("Fehler:" + obj.message);
+      throw new VError(obj.message.substr(0,40));
     } else {
       delete obj.res;
       return obj;
@@ -174,7 +175,7 @@ app.get("/errorlist",function errorlist(req, res) {
   // the ids are cycled every 2^31 - 2
 //  req.log.info(req.params, "vor db");
 
-  res.status(200).json([...controller.errcollector.values()]);
+  res.status(200).json([...controller.errcollector]);
 } );
 
 

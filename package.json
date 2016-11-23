@@ -30,7 +30,8 @@
     "test": "test/spec"
   },
   "dependencies": {
-    "debug": "^2.3.3"
+    "debug": "^2.3.3",
+    "verror": "^1.9.0"
   },
   "devDependencies": {
     "pino": "^3.0.1"
