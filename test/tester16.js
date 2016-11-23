@@ -156,6 +156,41 @@ app.listen(3000);
 
 
 
+app.get("/statistik",function statistik(req, res) {
+
+  res.status(200).json(controller.statistik());
+} );
+
+app.get("/laststart",function statistik(req, res) {
+  res.status(200).json({started: controller.started,lastStarted: controller.lastStarted, lastFinished: controller.lastFinished });
+
+} );
+
+
+app.get("/errorlist",function errorlist(req, res) {
+  // each request has its own id
+  // so you can track the log of each request
+  // by using `req.log`
+  // the ids are cycled every 2^31 - 2
+//  req.log.info(req.params, "vor db");
+
+  res.status(200).json([...controller.errcollector.values()]);
+} );
+
+
+app.get("/oldlist",function oldlist(req, res) {
+  // each request has its own id
+  // so you can track the log of each request
+  // by using `req.log`
+  // the ids are cycled every 2^31 - 2
+//  req.log.info(req.params, "vor db");
+  debug("hier params",req.query);
+
+  res.status(200).json(controller.checkRunning(req.query.minTime||2));
+} );
+
+
+
 Promise.resolve()
   .then(() => pool.query("select id from weburl order by id"))
   .then((res) => controller.runner(res.rows))
