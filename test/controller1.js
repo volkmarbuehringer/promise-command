@@ -1,7 +1,7 @@
 "use strict";
 
 
-cconst util = require("util");
+const util = require("util");
 util.inspect.defaultOptions.colors = true;
 // Debug wird mit NODE_DEBUG="controller" im Environment eingeschaltet
 const debug = util.debuglog("controller1");
