@@ -1,5 +1,10 @@
 "use strict";
 
+const util = require("util");
+util.inspect.defaultOptions.colors = true;
+// Debug wird mit NODE_DEBUG="controller" im Environment eingeschaltet
+const debug = util.debuglog("tester16");
+
 const VError=require("verror");
 const request = require("request-promise-native");
 const express = require("express");
@@ -12,7 +17,7 @@ const http = require("http");
 const Pool = require("pg-pool");
 const parseString = require("xml2js").parseString;
 
-const debug = require("debug")("tester16");
+
 const moment = require("moment");
 
 const pool = new Pool({
