@@ -1,8 +1,10 @@
 "use strict";
 
 
-const debug = require("debug")("controller1");
-//const moment = require("moment");
+const util = require("util");
+util.inspect.defaultOptions.colors = true;
+// Debug wird mit NODE_DEBUG="controller" im Environment eingeschaltet
+const debug = util.debuglog("controller1");
 
 class Controller1 extends require("../lib/controller.js") {
   constructor(param) {

@@ -25,7 +25,6 @@ const crawler =  //function for parallel execution with promises
 
 const controller = new Controller({
   parallel: 200,  // maximal parallism
-  limit: 3000000,  // limit of executions
   fun: crawler  //function to use
 });
 
@@ -95,19 +94,27 @@ class Controller1 extends require("promise-command") {
 //overwrite data generation
   *
   dataGenerator(res) {
-   let  now = moment.now("X");
-    for (let i = 0; i < 30; i++) {   // repeat iteration 30 times over data
-        if ( i> 0){   // every repeat after 10 secs
-              yield* this.waiter(10000 - (moment.now("X") - now));
-              debug("remaining data",this.collector.length);
-              // replace input data with finished data, throw away errors and hanging functions
-          res = this.collector;  
-          this.collector=[]; // clean collector
-        }
-      yield* this.startAll(res);   // new iteration over data
-     now = moment.now("X");
+
+    try {
+      const iter1 = this.makeIteratorFun(res, null, this.fun);  //prepare iterator fun,iterate over input data
+
+//only 1 iteration over data,collector and iterator are seperate
+//let first = yield* this.startAll([], () => iter1.next());
+
+//repeat endless with iterator over data, until limit is reached, iterator works on collector
+      let first = yield* this.startAll(res, () => iter1.next(), 30000); //start generator with iterator, limit 30000 iterations
+// in first are now the executions which are finished, the still running executions are missing
+
+      debug("wait now until finished");  
+      const l = yield* this.waiterFinished(3000, true);  // wait unitl finished or 3secs passed
+      debug("now end %d", l.length);
+
+      return first.concat(l);  //all results
+    } catch (err) {
+      debug("error generator", err);
     }
   }
+
 }
 ```
 
