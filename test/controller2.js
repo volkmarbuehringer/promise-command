@@ -49,12 +49,12 @@ class Controller2 extends require("promise-command") {
       first.push(...r);
       const x = Math.floor(first.length / 2);
 
-      const co = (a) => a ? a.diff[0] * 1e9 + a.diff[1] : 0;
+      const co = (a) => a ? a.duration[0] * 1e9 + a.duration[1] : 0;
 
       first.sort((a, b) => co(a) - co(b));
       const median = first[x];
       debug("median %d %j min %j max %j", x, median, first[0], first[first.length - 2]);
-      const testFun1 = (a) => a ? this.timeCompare(a.diff, 0, co(median)) : true;
+      const testFun1 = (a) => a ? this.timeCompare(a.duration, 0, co(median)) : true;
       const testFun2 = (a) => !testFun1(a);
 
       let iter = [this.makeIteratorFun(first, testFun1), this.makeIteratorFun(first, testFun2)];
