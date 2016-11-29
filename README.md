@@ -25,7 +25,6 @@ const crawler =  //function for parallel execution with promises
 
 const controller = new Controller({
   parallel: 200,  // maximal parallism
-  limit: 3000000,  // limit of executions
   fun: crawler  //function to use
 });
 
