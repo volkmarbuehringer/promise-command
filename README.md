@@ -98,6 +98,10 @@ class Controller1 extends require("promise-command") {
     try {
       const iter1 = this.makeIteratorFun(res, null, this.fun);  //prepare iterator fun,iterate over input data
 
+//only 1 iteration over data,collector and iterator are seperate
+//let first = yield* this.startAll([], () => iter1.next());
+
+//repeat endless with iterator over data, until limit is reached, iterator works on collector
       let first = yield* this.startAll(res, () => iter1.next(), 30000); //start generator with iterator, limit 30000 iterations
 // in first are now the executions which are finished, the still running executions are missing
 
