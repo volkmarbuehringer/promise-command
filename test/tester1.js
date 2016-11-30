@@ -56,8 +56,10 @@ Promise.resolve()
   })
   .then((res) => controller.runner(res))
   .then((x) => {
+    controller.destroy();
     pino.info(x, "finished");
   })
   .catch((err) => {
+    controller.destroy();
     pino.error(err, "exit with error");
   });
