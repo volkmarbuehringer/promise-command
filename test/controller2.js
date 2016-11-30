@@ -9,6 +9,10 @@ class Controller2 extends require("promise-command") {
   constructor(param) {
     super(param);
     this.started = [0, 0];
+
+    this.agent=require("http").globalAgent;
+    setInterval(this.checkRunning.bind(this), 1000,8).unref();
+
   }
   errHandler(pos, err) {
     //            debug("error",err,pos);
@@ -89,30 +93,30 @@ class Controller2 extends require("promise-command") {
 
   }
 
-  checkAgent(agent){
-    return function (){
-  const erg = this.checkRunning(15);
-  let bytes = 0;
-  let count = 0;
-  erg.forEach((x) => {
-    const url = x.input.url + ":80:";
-    const socker = agent.sockets[url];
-    if (socker && Array.isArray(socker) && socker.length === 1) {
-      const sock = socker[0];
-      count++;
-      if (sock.connecting && sock._handle.bytesRead === 0) {
-                      this.parallel++;
-      } else if (sock._hadError) {
-        debug("error");
-      } else {
-        bytes += sock._handle.bytesRead;
-      }
-    }
-  });
-  debug("longest %j %d %d %d", this.started, erg.length, count, bytes);
+  checkRunning( tim){
+    const erg = super.checkRunning(tim);
+    erg.forEach((x) => {
+        const url = x.input.uri.replace("http://","")+":80";
+      const socker = this.agent.sockets[url];
+      if (socker && Array.isArray(socker) && socker.length === 1) {
+        const sock = socker[0];
+//        debuglog("sock",sock._handle);
+        Object.assign(x, {socket: {connecting: sock.connecting, reading: sock.reading, writing: sock.writing,
+        bytes: sock._handle?sock._handle.bytesRead:null}});
 
-};
-}
+        if (sock.connecting && sock._handle.bytesRead === 0) {
+          if ( this.parallel < this.parallelsave*2 ){
+            this.parallel++;
+          }
+        }
+      }
+    });
+    return erg;
+
+  }
+
+
+
 }
 
 module.exports = Controller2;

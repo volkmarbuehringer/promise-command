@@ -135,8 +135,7 @@ const controller = new Controller({
 });
 
 
-
-const inter2=setInterval(controller.checkAgent(agent).bind(controller), 1000).unref();
+controller.agent= agent;
 
 
 function errorMessage(err, req, res, next) {
@@ -162,6 +161,15 @@ app.listen(3000);
 
 
 
+app.get("/results",function results(req, res) {
+  res.status(200).json(controller.res.filter((x)=>x).slice(parseInt(req.query.start)||0, parseInt(req.query.end)||100));
+} );
+
+app.get("/results/:id",function results(req, res) {
+  res.status(200).json(controller.res.find((x)=>x?x.input.opc_id==req.params.id:false));
+} );
+
+
 app.get("/statistik",function statistik(req, res) {
 
   res.status(200).json(controller.statistik());
@@ -180,7 +188,7 @@ app.get("/errorlist",function errorlist(req, res) {
   // the ids are cycled every 2^31 - 2
 //  req.log.info(req.params, "vor db");
 
-  res.status(200).json([...controller.errcollector]);
+  res.status(200).json([...controller.errcollector.values()]);
 } );
 
 
@@ -190,8 +198,7 @@ app.get("/oldlist",function oldlist(req, res) {
   // by using `req.log`
   // the ids are cycled every 2^31 - 2
 //  req.log.info(req.params, "vor db");
-  debug("hier params",req.query);
-
+  
   res.status(200).json(controller.checkRunning(req.query.minTime||2));
 } );
 
@@ -202,13 +209,13 @@ Promise.resolve()
   .then((res) => controller.runner(res.rows))
   .then((x) => {
     clearInterval(inter1);
-    clearInterval(inter2);
+//    clearInterval(inter2);
     pino1.info(x, "finished");
     pool.end();
   })
   .catch((err) => {
     clearInterval(inter1);
-    clearInterval(inter2);
+  //  clearInterval(inter2);
     pool.end();
     pino1.error(err[0], "exit with errors: %d", err.length);
   });
