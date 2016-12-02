@@ -9,13 +9,14 @@ class Controller2 extends require("promise-command") {
   constructor(param) {
     super(param);
     this.started = [0, 0];
-
+    this.res=[];
     this.agent=require("http").globalAgent;
     setInterval(this.checkRunning.bind(this), 1000,8).unref();
 
   }
-  errHandler(pos, err) {
-    //            debug("error",err,pos);
+  errHandler(pos, error) {
+     Object.assign( pos,{error});
+     debug(pos);
     if (this.errcollector.size > 300) {
       return true;
     } else {
@@ -47,7 +48,7 @@ class Controller2 extends require("promise-command") {
     try {
       const iter1 = this.makeIteratorFun(res, null);
 
-      const first = yield* this.startAll([], () => iter1.next());
+      const first = yield* this.startAll(this.res, () => iter1.next());
 
       const r = yield* this.waiterFinished(1000000, true);
       first.push(...r);
@@ -96,11 +97,12 @@ class Controller2 extends require("promise-command") {
   checkRunning( tim){
     const erg = super.checkRunning(tim);
     erg.forEach((x) => {
-        const url = x.input.uri.replace("http://","")+":80";
+        const url = x.input.url.replace("http://","")+":80:";
+
       const socker = this.agent.sockets[url];
       if (socker && Array.isArray(socker) && socker.length === 1) {
         const sock = socker[0];
-//        debuglog("sock",sock._handle);
+            //debug("sock",sock);
         Object.assign(x, {socket: {connecting: sock.connecting, reading: sock.reading, writing: sock.writing,
         bytes: sock._handle?sock._handle.bytesRead:null}});
 

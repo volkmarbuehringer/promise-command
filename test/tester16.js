@@ -53,17 +53,13 @@ const superrequest = request.defaults({
 //Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.1
 
 
-const differ = (obj) => Promise.resolve()
+const differ = (obj,res) => Promise.resolve()
   .then(() => {
 
     obj.ende = moment.now("X");
-    if (obj.res) {
-      obj.len = obj.res.length;
-    } else {
-      obj.len = null;
-    }
 
-    return new Promise((resolve, reject) => parseString(obj.res, {
+
+    return new Promise((resolve, reject) => parseString(res, {
       explicitArray: true
     }, (err, result) => {
       if (err) {
@@ -77,43 +73,43 @@ const differ = (obj) => Promise.resolve()
   })
   .then(() => pool.query(`insert into weblog
 ( start, ende, url , message ,len,data )
-          values($1,$2,$3,$4,$5,$6 )`, [obj.start, obj.ende, obj.url, obj.message || "", obj.len, obj.res || ""]))
-  .then(() => {
+          values($1,$2,$3,$4,$5,$6 )`, [obj.start, obj.ende, obj.url, obj.message || "",res?res.lengt:null, res || ""]))
+  /*.then(() => {
     if (obj.message) {
       throw new VError(obj.message.substr(0,40));
     } else {
-      delete obj.res;
       return obj;
     }
-  });
+  })*/
+  ;
 
 
 const crawler =
   (obj) => Promise.resolve(obj)
-  .then(() => pool.query("select url from weburl where id = $1", [obj.id]))
+  .then(() => pool.query("select url from weburl where id = $1", [obj.id])
+  /*
   .then((res) => {
     if (res.rows.length === 1) {
-      Object.assign(obj, res.rows[0]);
+
     }
     return obj;
   })
-  .then((obj) => pool.query("select count(*) anz,max(ende-start) maxer,min(ende-start) miner from weblog where url = $1 group by url", [obj.url]))
-  .then(() => {
-    obj.start = moment.now("X");
-    obj.message = null;
+  */
+//  .then((obj) => pool.query("select count(*) anz,max(ende-start) maxer,min(ende-start) miner from weblog where url = $1 group by url", [obj.url]))
+  .then((res) => {
+    return  Object.assign(obj, res.rows[0],{start: moment.now("X")});
+  //  obj.message = null;
 
-    return obj;
+    //return obj;
   })
   .then((obj) => superrequest({
     uri: "http://" + obj.url
   }))
-  .then((res) => Object.assign(obj, {
-    res
-  }))
-  .catch((err) => Object.assign(obj, {
-    message: err.message
-  }))
-  .then(differ);
+  .then((res)=>differ(obj,res))
+)
+.catch((err) => { throw new VError(err.message.substr(0,40));}
+)
+;
 
 
 //pino.info("vor start %d", webber.length);
@@ -129,7 +125,7 @@ pool.on("error", (error, client) => {
 const Controller = require("./controller2.js");
 
 const controller = new Controller({
-  parallel: 40,
+  parallel: 30,
   //limit : 100,
   fun: crawler
 });
@@ -166,9 +162,13 @@ app.get("/results",function results(req, res) {
 } );
 
 app.get("/results/:id",function results(req, res) {
-  res.status(200).json(controller.res.find((x)=>x?x.input.opc_id==req.params.id:false));
+  res.status(200).json(controller.res.find((x)=>x?x.input.id==req.params.id:false));
 } );
 
+app.get("/open",function open(req, res) {
+
+  res.status(200).json([...controller.open]);
+} );
 
 app.get("/statistik",function statistik(req, res) {
 
@@ -188,7 +188,7 @@ app.get("/errorlist",function errorlist(req, res) {
   // the ids are cycled every 2^31 - 2
 //  req.log.info(req.params, "vor db");
 
-  res.status(200).json([...controller.errcollector.values()]);
+  res.status(200).json([...controller.errcollector]);
 } );
 
 
@@ -198,7 +198,7 @@ app.get("/oldlist",function oldlist(req, res) {
   // by using `req.log`
   // the ids are cycled every 2^31 - 2
 //  req.log.info(req.params, "vor db");
-  
+
   res.status(200).json(controller.checkRunning(req.query.minTime||2));
 } );
 
